@@ -34,10 +34,10 @@ body {
 .neon-glow {
     display: block;
     font-size: 3.5rem;
-    color: #58a6ff !important;
+    color: #cf0cbf !important;
     font-weight: 800;
     margin: 20px 0;
-    text-shadow: 0 0 10px rgba(88,166,255,0.7), 0 0 20px rgba(88,166,255,0.5), 0 0 30px #005cc5;
+    text-shadow: 0 0 10px rgba(241, 88, 255, 0.7), 0 0 20px rgba(255, 88, 219, 0.5), 0 0 30rgb(197, 0, 16)cc5;
 }
 
 .prediction-stats {

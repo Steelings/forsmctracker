@@ -16,8 +16,9 @@
 <body>
 
     <header class="navbar">
-        <div class="nav-logo">
-            Forsen Speedrun Tracker (last vod: 26 march)<span class="beta-tag">v2.0 BETA - Maintained by Steelingz </span>
+        <div class="nav-logo" style="display: flex; align-items: center; gap: 10px;">
+            <img src="static/1528.webp" height="28" alt="15:28">
+            <span>Forsen Speedrun Tracker (last vod: 26 march)<span class="beta-tag">v2.0 BETA - Maintained by Steelingz</span></span>
         </div>
         <div class="nav-right">
             <button class="dataset-btn" onclick="toggleModal(true)">Dataset</button>
@@ -32,11 +33,15 @@
         <span class="record-date-value neon-glow" id="hero-date">Calculating...</span>
         <div class="prediction-stats">
             <div class="stat-mini">
-                <span>Optimistic (10% By)</span>
+                <span style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+                    <img src="static/SmugTime.webp" height="18" alt="SmugTime"> Optimistic (10% By)
+                </span>
                 <strong id="date-after">-</strong>
             </div>
             <div class="stat-mini">
-                <span>Worst Case (99% By)</span>
+                <span style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+                    <img src="static/aware.webp" height="18" alt="Aware"> Worst Case (99% By)
+                </span>
                 <strong id="date-before">-</strong>
             </div>
         </div>
