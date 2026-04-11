@@ -1,4 +1,4 @@
-# Pacefors <img src="static/SmugTime.webp" alt="ForsenHoppedin" />
+# Pacefors <img src="static/SmugTime.webp" alt="ForsenHoppedin" /> - UPDATED DATA
 
 Pacefors is a web app that tracks Forsens Minecraft Speedruns with split/death data using text recognition (OCR) from his streams.  
 Data is automatically collected and pushed using GitHub Actions, and the app is hosted on GitHub Pages.
