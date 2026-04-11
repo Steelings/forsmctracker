@@ -22,6 +22,11 @@ export class Runlist {
     }
 
     initElement() {
+        if (!this.element) {
+        console.error("Runlist: Container element not found");
+        return; 
+    }
+    this.element.style.textAlign = "left";
         this.element.style.textAlign = "left";
         this.element.innerHTML = `
             <div class="runs-settings" style="margin-bottom: 20px; display: flex; gap: 20px;">

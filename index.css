@@ -1,33 +1,16 @@
-/* Fix Neon Color */
-.neon-glow {
-    color: #58a6ff !important;
-    font-weight: 800;
-    text-shadow: 0 0 10px rgba(88,166,255,0.7), 0 0 20px rgba(88,166,255,0.5), 0 0 30px #005cc5;
+/* --- GLOBAL THEME --- */
+* {
+    font-family: "JetBrains Mono", monospace;
+    box-sizing: border-box;
 }
 
-/* Center Pie Chart */
-.pie-wrapper {
-    height: 300px;
-    width: 100%;
-    display: flex;
-    justify-content: center; /* This centers the canvas */
-    align-items: center;
+body {
+    margin: 0;
+    background-color: #0d1117;
+    color: #f0f6fc;
 }
 
-/* Center Odds Table */
-.centered-section {
-    max-width: 900px;
-    margin: 40px auto;
-    text-align: center;
-}
-
-.modern-table {
-    margin: 0 auto;
-    width: 100%;
-    text-align: left;
-}
-
-/* Navbar Style */
+/* --- NAVBAR --- */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -36,53 +19,45 @@
     background: #161b22;
     border-bottom: 1px solid #30363d;
 }
+
+.nav-logo { font-weight: 800; font-size: 1.2rem; }
+.beta-tag { font-size: 0.7rem; color: #8b949e; vertical-align: middle; }
+
+/* --- HERO & NEON --- */
 .prediction-hero {
     background: radial-gradient(circle at center, #1c2128 0%, #0d1117 100%);
-    padding: 100px 20px;
-    text-align: center;
-}
-
-@keyframes flicker {
-    0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
-    20%, 24%, 55% { opacity: 0.8; }
-}
-
-/* --- LAYOUT FIXES --- */
-.prediction-hero {
     padding: 80px 20px;
+    text-align: center;
     border-bottom: 1px solid #30363d;
 }
 
+.neon-glow {
+    display: block;
+    font-size: 3.5rem;
+    color: #58a6ff !important;
+    font-weight: 800;
+    margin: 20px 0;
+    text-shadow: 0 0 10px rgba(88,166,255,0.7), 0 0 20px rgba(88,166,255,0.5), 0 0 30px #005cc5;
+}
+
+.prediction-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.stat-mini span { display: block; font-size: 0.7rem; color: #8b949e; text-transform: uppercase; }
+.stat-mini strong { font-size: 1.2rem; }
+
+/* --- GRID & CARDS --- */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     padding: 40px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-}
-
-.chart-container {
-    position: relative;
-    height: 450px; /* Fixed height prevents squishing */
-    width: 100%;
-}
-
-.centered-section {
-    text-align: center;
-    max-width: 800px;
-    margin: 20px auto;
-}
-
-.modern-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-}
-
-.modern-table td {
-    padding: 12px;
-    border-bottom: 1px solid #30363d;
 }
 
 .stat-card {
@@ -90,13 +65,40 @@
     border: 1px solid #30363d;
     border-radius: 12px;
     padding: 20px;
+    text-align: center;
 }
 
-.pie-card {
-    grid-column: span 2;
-    height: 350px;
+.stat-card h3 { font-size: 0.8rem; color: #8b949e; margin: 0 0 10px 0; }
+.stat-value { font-size: 2rem; font-weight: bold; display: block; }
+.stat-subtext { color: #58a6ff; font-size: 0.9rem; }
+
+.card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 25px;
+    margin: 20px 40px;
 }
 
-.canvas-container {
-    height: 280px;
+.pie-card { grid-column: span 2; }
+.pie-wrapper { height: 300px; width: 100%; display: flex; justify-content: center; align-items: center; }
+
+.chart-container { position: relative; height: 450px; width: 100%; }
+
+/* --- TABLES --- */
+.centered-section { max-width: 900px; margin: 40px auto; text-align: center; }
+.modern-table { width: 100%; border-collapse: collapse; text-align: left; }
+.modern-table td, .modern-table th { padding: 12px; border-bottom: 1px solid #30363d; }
+
+/* --- MODAL --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000;
 }
+.modal-content { width: 400px; text-align: center; }
+
+.dataset-btn {
+    background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+    padding: 5px 15px; border-radius: 6px; cursor: pointer;
+}
+.dataset-btn:hover { background: #30363d; }

@@ -40,7 +40,7 @@
                 <strong id="date-before">-</strong>
             </div>
         </div>
-        <p id="hero-prob" style="color: var(--muted); margin-top: 15px; font-size: 0.8rem;">Awaiting data...</p>
+        <p id="hero-prob" style="color: #8b949e; margin-top: 15px; font-size: 0.8rem;">Awaiting data...</p>
     </section>
 
     <div class="dashboard-grid">
@@ -89,7 +89,7 @@
 
     <section class="card">
         <h2>Pace Analytics: Daily Averages</h2>
-        <div class="chart-container" style="height: 400px; position: relative;">
+        <div class="chart-container">
             <canvas class="avg-entry-chart"></canvas>
         </div>
     </section>
@@ -118,18 +118,17 @@
         import { buildDailySummary, buildDeathPieChart } from "./js/summary.js";
         import { buildAvgEntryChart } from "./js/graphs.js";
         import { buildOdds, buildPredictions } from "./js/odds.js";
-        import { Runlist } from "./js/runlist.js";
 
         async function init() {
             let liveRuns = [];
             try {
                 const response = await fetch("./data/live_stripped_runs.json");
-                liveRuns = await response.json();
+                if (response.ok) liveRuns = await response.json();
             } catch (e) { console.log("No live data found."); }
 
             const runs = vodRuns.concat(liveRuns);
 
-            // Execute all builders - sequence ensures all IDs are ready
+            // Safety: Wrapped in DOMContentLoaded to ensure IDs exist
             buildDailySummary(runs);
             buildPredictions(runs);
             buildDeathPieChart(runs);
@@ -137,11 +136,14 @@
             buildOdds(runs);
         }
 
-        init();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 
     <script>
-        // UI Helpers
         function toggleModal(show) {
             document.getElementById('download-background').style.display = show ? 'flex' : 'none';
         }
