@@ -73,3 +73,16 @@ export function buildDailySummary(runs) {
     daySelect.value = daySelect.options[daySelect.options.length - 1].value;
     onChange(daySelect.value, runsByDay[daySelect.value]);
 }
+
+export function updatePaceManCards(runs) {
+    // Filter out the garbage
+    const qualityRuns = runs.filter(r => !isDeadRun(r));
+
+    // Update Nether Card
+    const nethers = qualityRuns.filter(r => r.nether);
+    document.getElementById('val-nether-qty').textContent = nethers.length;
+    
+    // Calculate Avg for Quality Runs only
+    const avg = nethers.reduce((a, b) => a + b.nether, 0) / nethers.length;
+    document.getElementById('val-nether-avg').textContent = `Avg: ${formatMMSS(avg)}`;
+}

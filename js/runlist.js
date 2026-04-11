@@ -241,3 +241,35 @@ function utcDiff(timeStr) {
     const now = new Date();
     return (now.getUTCHours() - h) * 3600 + (now.getUTCMinutes() - m) * 60 + (s - now.getUTCSeconds() - s);
 }
+
+
+export const isDeadRun = (run) => {
+    const netherLimit = 300; // 5 mins
+    const strongholdLimit = 900; // 15 mins
+    
+    if (run.nether > netherLimit) return true;
+    if (run.stronghold > strongholdLimit) return true;
+    return false;
+};
+
+
+rebuildRuns() {
+    let outRuns = this.runs.map(run => {
+        // Assign a "Forsen Score"
+        let score = 0;
+        if (run.finish) score += 10000;
+        if (run.end) score += 5000;
+        if (run.stronghold) score += 1000;
+        if (run.blind) score += 500;
+        
+        // Bonus for fast nethers
+        if (run.nether && run.nether < 180) score += 200; 
+        
+        return { ...run, forsenScore: score };
+    });
+
+    // Sort by score descending
+    outRuns.sort((a, b) => b.forsenScore - a.forsenScore);
+
+    // Now render outRuns...
+}

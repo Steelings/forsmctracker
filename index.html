@@ -19,7 +19,6 @@
     <div class="header">
         <div style="display: flex; align-items: center; gap: 0 10px; padding: 8px 12px" id="header-title-group">
             <h1 id="header-text">Forsen Speedrun Tracker</h1>
-
             <div>
                 <img src="static/1528.webp" height="24" alt="15:28" style="vertical-align: text-bottom"/>
                 <img src="static/SmugTime.webp" alt="SmugTime" style="vertical-align: text-bottom"/>
@@ -44,12 +43,10 @@
                 <input type="radio" id="individual-tab" name="header-tab"/>
                 <label class="tab-like" for="individual-tab">All Runs</label>
             </div>
-
             <div id="download-text" class="tab-like" onclick="document.getElementById('download-background').style.display = 'block'">
                 Download<br>Dataset
             </div>
-
-            <a href="https://github.com/BleachDev/pacefors" class="tab-like">
+            <a href="https://github.com/Steelings/pacefors" class="tab-like">
                 <img src="static/github.svg" height="28" alt="Source Code"/>
             </a>
         </div>
@@ -57,109 +54,77 @@
     <div id="header-runs"></div>
 
     <div class="summary-tab">
-        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap">
-            <div style="display: flex; flex-direction: column">
-                <div class="container predictions-template"></div>
-
-                <div id="daily-summary-container" class="container">
-                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 30px">
-                        <h2>Daily Summary</h2>
-                        <label><select id="summary-day"></select></label>
-                    </div>
-                </div>
+        <div class="card prediction-hero">
+            <div class="prediction-main">
+                <h3>Estimated Record Date</h3>
+                <span class="record-date-value" id="hero-date">Calculating...</span>
+                <p id="hero-prob">Awaiting data processing...</p>
             </div>
-
-            <div style=" min-width: 500px; overflow: hidden">
-                <h2>Average Splits per Day</h2>
-                <div style="max-width: 800px"><canvas class="avg-entry-chart" height="350"></canvas></div>
-
-                <h2>Today's Runs</h2>
-                <div id="summary-runs" style="max-width: 800px; max-height: 600px; overflow: scroll"></div>
+            <div class="prediction-stats">
+                <div class="stat-mini">
+                    <span>90% Chance After</span>
+                    <strong id="date-after">-</strong>
+                </div>
+                <div class="stat-mini">
+                    <span>90% Chance Before</span>
+                    <strong id="date-before">-</strong>
+                </div>
             </div>
         </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card" id="card-nethers">
+                <h3>Nether Enters</h3>
+                <span class="stat-value" id="val-nether-qty">0</span>
+                <span class="stat-subtext" id="val-nether-avg">Avg: 0:00</span>
+            </div>
+            <div class="stat-card" id="card-bastions">
+                <h3>First Structure</h3>
+                <span class="stat-value" id="val-struct-qty">0</span>
+                <span class="stat-subtext" id="val-struct-avg">Avg: 0:00</span>
+            </div>
+            <div class="stat-card" id="card-stronghold">
+                <h3>Stronghold Enters</h3>
+                <span class="stat-value" id="val-strong-qty">0</span>
+                <span class="stat-subtext" id="val-strong-avg">Avg: 0:00</span>
+            </div>
+            <div class="stat-card" id="card-ends">
+                <h3>End Entries</h3>
+                <span class="stat-value" id="val-end-qty">0</span>
+                <span class="stat-subtext" id="val-end-avg">Avg: 0:00</span>
+            </div>
+        </div>
+
+        <div class="chart-section card">
+            <h2>Pace Analytics: Daily Average Entry Times</h2>
+            <div style="height: 400px; width: 100%;">
+                <canvas class="avg-entry-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 15px;">
+                <h2>Recent Run History</h2>
+                <label><select id="summary-day" style="background: #181820; color: white; border: 1px solid #444; padding: 5px;"></select></label>
+            </div>
+            <div id="summary-runs" style="max-height: 500px; overflow-y: auto;"></div>
+        </div>
     </div>
-
     <div class="graphs-tab">
-        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap">
-            <div style="display: flex; flex-direction: column">
-                <div class="container predictions-template"></div>
-
-                <div class="container">
-                    <h2>Split Odds</h2>
-                    <table>
-                        <tr>
-                            <th></th>
-                            <th>Nether</th>
-                            <th>Struct 1</th>
-                            <th>Struct 2</th>
-                            <th>Blind</th>
-                            <th>Stronghold</th>
-                            <th>End</th>
-                        </tr>
-                        <tr id="odds-chance">
-                            <th>Chance of<br>Enter</th>
-                        </tr>
-                        <tr id="odds-day-chance">
-                            <th>Chance of<br>Enter/Day</th>
-                        </tr>
-
-                        <!-- Awful awful -->
-                        <tr></tr>
-                        <tr></tr>
-
-                        <tr id="odds-top10-time">
-                            <th>Top 10%<br>Time</th>
-                        </tr>
-                        <tr id="odds-avg-time">
-                            <th>Average<br>Time</th>
-                        </tr>
-                        <tr id="odds-top90-time">
-                            <th>Top 90%<br>Time</th>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="container">
-                    <h2>Calculator</h2>
-                    <div style="display: flex; flex-direction: column; gap: 10px">
-                        <div style="display: flex; gap: 20px; justify-content: center">
-                            <div style="display: flex; flex-direction: column">
-                                <label for="calc-type">Chance of</label>
-                                <select id="calc-type">
-                                    <option>Nether</option>
-                                    <option>Struct 1</option>
-                                    <option>Struct 2</option>
-                                    <option>Blind</option>
-                                    <option>Stronghold</option>
-                                    <option>End</option>
-                                </select>
-                            </div>
-                            <div style="display: flex; flex-direction: column">
-                                <label for="calc-date">before</label>
-                                <input type="date" id="calc-date"/>
-                            </div>
-                            <div style="display: flex; flex-direction: column">
-                                <label for="calc-minutes">in under</label>
-                                <div><input type="number" id="calc-minutes" min="0" value="30"/>:<input type="number" id="calc-seconds" min="0" max="59" value="0"/></div>
-                            </div>
-                        </div>
-                        <span class="code-block" id="calc-result">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="flex: 1; min-width: 500px; max-width: 1000px; overflow: hidden">
-                <h2>Average Splits per Day</h2>
-                <div><canvas class="avg-entry-chart" height="450"></canvas></div>
-
-                <h2>Splits by Run #</h2>
-                <div><canvas class="entry-chart" height="450"></canvas></div>
-            </div>
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding: 20px;">
+             <div class="container" style="background: #252540; padding: 20px; border-radius: 8px;">
+                <h2>Split Odds</h2>
+                <table id="odds-table">
+                    <tr><th></th><th>Nether</th><th>Struct 1</th><th>Struct 2</th><th>Blind</th><th>Stronghold</th><th>End</th></tr>
+                    <tr id="odds-chance"><th>Chance of Enter</th></tr>
+                    <tr id="odds-day-chance"><th>Chance/Day</th></tr>
+                </table>
+             </div>
         </div>
     </div>
 
     <div class="individual-tab">
-        <div style="text-align: left; display: inline-block">
+        <div style="text-align: left; display: inline-block; padding: 20px;">
             <h2>All Runs</h2>
             <div id="individual-runs"></div>
         </div>
@@ -183,94 +148,37 @@
             try {
                 const mod = await import(url, { with: { type: "json" } });
                 return mod.default ?? [];
-            } catch (e) {
-                console.log("Failed to Import URL", url, e);
-                return [];
-            }
+            } catch (e) { return []; }
         }
 
         const liveRuns = await tryImport("./data/live_stripped_runs.json");
         const runs = vodRuns.concat(liveRuns);
 
-        buildEntryChart(runs);
+        // Run the builders
         buildAvgEntryChart(runs);
         buildOdds(runs);
-        buildCalculator(runs);
         buildPredictions(runs);
         buildDailySummary(runs);
         new Runlist(document.getElementById("individual-runs"), runs);
 
-        // Init Header stats
+        // Header Stats
         document.getElementById("header-runs").innerHTML = `
             <span>Runs <span style="color: #55ee55">${runs.length}</span></span>
             <span>Nethers <span style="color: ${C_NETHER}">${runs.filter(r => r.nether).length}</span></span>
-            <span>Bastions <span style="color: ${C_BASTION}">${runs.filter(r => r.bastion).length}</span></span>
-            <span>Forts <span style="color: ${C_FORT}">${runs.filter(r => r.fort).length}</span></span>
-            <span>Blinds <span style="color: ${C_BLIND}">${runs.filter(r => r.blind).length}</span></span>
-            <span>Strongholds <span style="color: ${C_STRONGHOLD}">${runs.filter(r => r.stronghold).length}</span></span>
             <span>Ends <span style="color: ${C_END}">${runs.filter(r => r.end).length}</span></span>
-            <span>Finishes <span style="color: ${C_FINISH}">0</span></span>
         `;
 
-        // Init download links
-        tryImport("./data/index.json").then(index => {
-            let str = "<span>Processed Combined Data</span>";
-            let lastItem;
-            index.sort((a, b) => a.path.split("/").length - b.path.split("/").length || a.path.localeCompare(b.path)).forEach(item => {
-                if (item.path.match(/[/\\]/) && !lastItem?.path?.match(/[/\\]/)) {
-                    str += `<hr><span>Raw Daily Data</span>`;
-                }
-
-                str += `
-                <div style="text-align: left">
-                    <a href="./data/${item.path}" class="dataset-link" download="" style="display: inline-block; width: 280px">${item.path}</a>
-                    <span style="color: #aaa; font-size: 12px">${(item.size / 1000).toFixed(2)} KB</span>
-                </div>`;
-                lastItem = item;
-            });
-
-            document.getElementById("download-container").innerHTML += str;
-        });
-
-        document.getElementById("download-background").onclick = e => {
-            if (e.target.id === "download-background") {
-                document.getElementById("download-background").style.display = "none";
-            }
-        }
-
-        // Init tabs
+        // Tab Logic
         const tabs = [ "summary-tab", "graphs-tab", "individual-tab" ];
         const onChange = () => {
             const selectedTab = tabs.find(tab => document.getElementById(tab).checked);
             tabs.forEach(tab => {
-                for (const e of document.getElementsByClassName(tab))
-                    e.style.display = tab === selectedTab ? "block" : "none";
+                const elements = document.getElementsByClassName(tab);
+                for (const e of elements) e.style.display = tab === selectedTab ? "block" : "none";
             });
-            document.getElementById("header-dropdown-btn").innerText = document.querySelector(`label[for="${selectedTab}"]`).innerText + " ☰";
         };
-
         tabs.forEach(tab => document.getElementById(tab).onchange = onChange);
         onChange();
-
-        // Init dropdown menu
-        const headerTabs = document.getElementById("header-tabs");
-        const dropdownBtn = document.getElementById("header-dropdown-btn");
-
-        dropdownBtn.addEventListener("click", () => headerTabs.classList.toggle("open"));
-
-        document.addEventListener("click", e => {
-            if (!headerTabs.contains(e.target) && e.target !== dropdownBtn) {
-                headerTabs.classList.remove("open");
-            }
-        });
-
-        const onResize = () => {
-            document.getElementById("header-text").innerText =
-                window.innerWidth < 1220 ? "Pacefors" : "Forsen Speedrun Tracker";
-            document.getElementById("header-title-group").style.flexDirection = window.innerWidth < 530 ? "column" : "row";
-        }
-        window.addEventListener("resize", onResize);
-        onResize();
     </script>
 </body>
 </html>
