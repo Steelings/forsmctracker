@@ -14,7 +14,7 @@ export function buildOdds(runs) {
     if (row && total > 0) {
         row.innerHTML = `<tr><th>Split</th><th>Runs</th><th>Success %</th></tr>` + splits.map((s, i) => {
             const num = Object.values(s).flat().length;
-            const p = ((num / total) * 100).toFixed(2); // Restored precision
+            const p = ((num / total) * 100).toFixed(2); 
             return `<tr><td>${labels[i]}</td><td>${num}</td><td style="font-weight:bold">${p}%</td></tr>`;
         }).join("");
     }
@@ -28,7 +28,7 @@ export function buildPredictions(runs) {
     if (!fit || total === 0) return;
 
     const avgRuns = total / Object.keys(counts).length;
-    const pRec = (blindTimes.length / total) * 0.0125; // Combined speedrun probability constant
+    const pRec = (blindTimes.length / total) * 0.0125; 
 
     let d10 = 0, d50 = 0, d99 = 0, cum = 0;
     while (cum < 0.99 && d99 < 5000) {
@@ -51,5 +51,6 @@ export function buildPredictions(runs) {
     if (hDate) hDate.textContent = format(d50);
     if (dAfter) dAfter.textContent = format(d10);
     if (dBefore) dBefore.textContent = format(d99);
-    if (hProb) hProb.textContent = `99% confidence reached in ${d99_days} days`;
+    // FIXED: Changed d99_days to d99
+    if (hProb) hProb.textContent = `99% confidence reached in ${d99} days`;
 }
