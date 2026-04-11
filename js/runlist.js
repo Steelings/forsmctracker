@@ -94,11 +94,11 @@ export class Runlist {
         runElement.innerHTML = processedRuns.map(outRun => {
             const dateStr = outRun.vod ? outRun.date : "LIVE";
             
-            // Updated Twitch URL generation
+            // Updated Twitch URL generation (with -5 second stream delay fix)
             let link = "";
             if (outRun.vod && outRun.timestamps && outRun.timestamps.length > 0) {
                 const lastStamp = outRun.timestamps[outRun.timestamps.length - 1];
-                const parts = lastStamp.split(':').map(Number); // Split and convert to math numbers
+                const parts = lastStamp.split(':').map(Number); 
                 
                 let totalSeconds = 0;
                 if (parts.length === 3) {
@@ -107,20 +107,16 @@ export class Runlist {
                     totalSeconds = (parts[0] * 60) + parts[1];
                 }
 
-                // Subtract 10 seconds (Math.max prevents it from going into negative time)
-                totalSeconds = Math.max(0, totalSeconds - 10);
+                totalSeconds = Math.max(0, totalSeconds - 12);
 
-                // Convert back to Hours, Minutes, Seconds
                 const h = Math.floor(totalSeconds / 3600);
                 const m = Math.floor((totalSeconds % 3600) / 60);
                 const s = totalSeconds % 60;
 
-                // Format for Twitch (only include hours if it's over 1 hour)
                 const tStr = h > 0 ? `${h}h${m}m${s}s` : `${m}m${s}s`;
                 link = `href="${outRun.vod}?t=${tStr}"`;
             }
             
-            // Updated default Reset logic
             const deathText = outRun.deathData ? outRun.deathData.text : "Reset";
             const deathImg = outRun.deathData ? outRun.deathData.img : "static/forsenLoading-4x.webp";
             
@@ -130,6 +126,17 @@ export class Runlist {
                     <img src="${deathImg}" width="24" height="24" alt="${deathText}" style="border-radius: 4px;">
                 </div>
             `;
+
+            // NEW: Clean up the Run Time display for perfect UI
+            let formattedTime = outRun.runTime || "-";
+            const timeParts = formattedTime.split(/[.:]/); // Splits by either dot or colon
+            if (timeParts.length === 3) {
+                // Formats MM.SS.MS to MM:SS + tiny MS
+                formattedTime = `${timeParts[0]}<span style="color: #8b949e;">:</span>${timeParts[1]}<span style="font-size: 0.7em; color: #8b949e;">.${timeParts[2]}</span>`;
+            } else if (timeParts.length === 4) {
+                // Formats HH.MM.SS.MS
+                formattedTime = `${timeParts[0]}<span style="color: #8b949e;">:</span>${timeParts[1]}<span style="color: #8b949e;">:</span>${timeParts[2]}<span style="font-size: 0.7em; color: #8b949e;">.${timeParts[3]}</span>`;
+            }
 
             return `
             <div class="run-entry" style="border-bottom: 1px solid #30363d; padding: 12px 0; display: flex; align-items: center;">
@@ -147,8 +154,8 @@ export class Runlist {
 
                 ${deathHTML}
 
-                <span style="width: 70px; text-align: right; font-size: 0.9rem; color: #f0f6fc; flex-shrink: 0; font-weight: bold;">
-                    ${outRun.runTime}
+                <span style="width: 90px; text-align: right; font-size: 0.95rem; color: #f0f6fc; flex-shrink: 0; font-weight: bold; font-variant-numeric: tabular-nums;">
+                    ${formattedTime}
                 </span>
             </div>`;
         }).join("");
