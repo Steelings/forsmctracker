@@ -17,6 +17,7 @@
             <div class="stat-mini"><span>90% After</span><strong id="date-after">-</strong></div>
             <div class="stat-mini"><span>99% Before</span><strong id="date-before">-</strong></div>
         </div>
+        <p id="hero-prob" style="color: var(--muted); margin-top: 15px; font-size: 0.8rem;">Awaiting data...</p>
     </section>
 
     <div class="dashboard-grid">
@@ -25,35 +26,41 @@
         <div class="stat-card"><h3>Struct 2</h3><span class="stat-value" id="val-s2-qty">-</span><span class="stat-subtext" id="val-s2-avg">-</span></div>
         <div class="stat-card"><h3>Stronghold</h3><span class="stat-value" id="val-strong-qty">-</span><span class="stat-subtext" id="val-strong-avg">-</span></div>
         <div class="stat-card"><h3>End</h3><span class="stat-value" id="val-end-qty">-</span><span class="stat-subtext" id="val-end-avg">-</span></div>
+        
         <div class="stat-card pie-card">
-            <h3>Death Causes</h3>
-            <div class="canvas-container"><canvas id="death-pie-chart"></canvas></div>
+            <h3>Run Killers</h3>
+            <div class="canvas-container" style="height: 300px;"><canvas id="death-pie-chart"></canvas></div>
         </div>
     </div>
 
     <section class="card centered-section">
         <h2>Detailed Split Odds</h2>
-        <div class="table-container">
-            <table class="modern-table">
-                <tbody id="odds-chance"></tbody>
-            </table>
-        </div>
+        <table class="modern-table">
+            <tbody id="odds-chance"></tbody> </table>
     </section>
 
     <section class="card">
         <h2>Pace Analytics: Daily Averages</h2>
-        <div class="chart-container">
+        <div class="chart-container" style="height: 450px; position: relative;">
             <canvas class="avg-entry-chart"></canvas>
         </div>
     </section>
 
     <section class="card">
-        <div class="history-header">
-            <h2>Recent Run History</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Run History</h2>
             <select id="summary-day"></select>
         </div>
         <div id="summary-runs"></div>
     </section>
+
+    <div id="download-background" style="display:none;" class="modal-overlay">
+        <div class="card">
+            <h2>Datasets</h2>
+            <a href="./data/stripped_runs.json" download>stripped_runs.json</a>
+            <button onclick="this.parentElement.parentElement.style.display='none'">Close</button>
+        </div>
+    </div>
 
     <script type="module">
         import vodRuns from "./data/stripped_runs.json" with { type: "json" };
@@ -62,16 +69,23 @@
         import {buildOdds, buildPredictions} from "./js/odds.js";
         import {Runlist} from "./js/runlist.js";
 
-        const liveRuns = await fetch("./data/live_stripped_runs.json").then(r => r.json()).catch(() => []);
-        const runs = vodRuns.concat(liveRuns);
+        async function init() {
+            let liveRuns = [];
+            try {
+                const r = await fetch("./data/live_stripped_runs.json");
+                liveRuns = await r.json();
+            } catch (e) {}
+            
+            const runs = vodRuns.concat(liveRuns);
 
-        // Run all builders immediately
-        buildDailySummary(runs);
-        buildPredictions(runs);
-        buildDeathPieChart(runs);
-        buildAvgEntryChart(runs);
-        buildOdds(runs);
-        new Runlist(document.getElementById("summary-runs"), runs);
+            // Execute all builders - order matters for IDs
+            buildDailySummary(runs);
+            buildPredictions(runs);
+            buildDeathPieChart(runs);
+            buildAvgEntryChart(runs);
+            buildOdds(runs);
+        }
+        init();
     </script>
 </body>
 </html>

@@ -1,12 +1,17 @@
-/* --- NEON GLOW --- */
-.neon-glow {
+/.neon-glow {
     color: #58a6ff;
+    font-weight: 800;
     text-shadow: 
-        0 0 5px #58a6ff,
+        0 0 7px #58a6ff,
         0 0 10px #58a6ff,
-        0 0 20px #005cc5,
-        0 0 40px #005cc5;
-    animation: flicker 2s infinite alternate;
+        0 0 21px #58a6ff,
+        0 0 42px #005cc5;
+}
+
+.prediction-hero {
+    background: radial-gradient(circle at center, #1c2128 0%, #0d1117 100%);
+    padding: 100px 20px;
+    text-align: center;
 }
 
 @keyframes flicker {

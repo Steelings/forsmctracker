@@ -42,8 +42,13 @@ export function buildPredictions(runs) {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    document.getElementById("hero-date").textContent = format(d50);
-    document.getElementById("date-after").textContent = format(d10);
-    document.getElementById("date-before").textContent = format(d99);
-    document.getElementById("hero-prob").textContent = `99% confidence threshold reached in ${d99} days`;
+    const hDate = document.getElementById("hero-date");
+    const hProb = document.getElementById("hero-prob");
+    const dAfter = document.getElementById("date-after");
+    const dBefore = document.getElementById("date-before");
+
+    if (hDate) hDate.textContent = format(d50);
+    if (dAfter) dAfter.textContent = format(d10);
+    if (dBefore) dBefore.textContent = format(d99);
+    if (hProb) hProb.textContent = `99% confidence reached in ${d99_days} days`;
 }
