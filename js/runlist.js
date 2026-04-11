@@ -107,8 +107,8 @@ export class Runlist {
                     totalSeconds = (parts[0] * 60) + parts[1];
                 }
 
-                // Subtract 5 seconds (Math.max prevents it from going into negative time)
-                totalSeconds = Math.max(0, totalSeconds - 5);
+                // Subtract 10 seconds (Math.max prevents it from going into negative time)
+                totalSeconds = Math.max(0, totalSeconds - 10);
 
                 // Convert back to Hours, Minutes, Seconds
                 const h = Math.floor(totalSeconds / 3600);
