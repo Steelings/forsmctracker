@@ -19,118 +19,67 @@ Chart.defaults.elements.point.radius = 3;
 Chart.defaults.elements.line.borderWidth = 2;
 Chart.defaults.elements.line.tension = 0.25;
 
-export function buildEntryChart(runs) {
-    const netherPoints = [];
-    const struct1Points = [];
-    const struct2Points = [];
-    const blindPoints = [];
-    const strongholdPoints = [];
-    const endPoints = [];
+export function buildAvgEntryChart(runs) {
+    const categories = [
+        { key: 'nether', color: C_NETHER, label: 'Nether' },
+        { key: 'struct1', color: C_BASTION, label: 'Structure' },
+        { key: 'stronghold', color: C_STRONGHOLD, label: 'Stronghold' },
+        { key: 'end', color: C_END, label: 'End' }
+    ];
 
-    // Use same reverse ordering convention as buildRuns (latest first)
-    for (let r = runs.length - 1; r > 0; r--) {
-        const run = runs[r];
-
-        if (run.nether) netherPoints.push({ x: r, y: run.nether });
-        if (run.bastion || run.fort) struct1Points.push({ x: r, y: !run.bastion ? run.fort : !run.fort ? run.bastion : Math.min(run.fort, run.bastion) });
-        if (run.bastion && run.fort) struct2Points.push({ x: r, y: Math.max(run.fort, run.bastion) });
-        if (run.blind) blindPoints.push({ x: r, y: run.blind });
-        if (run.stronghold) strongholdPoints.push({ x: r, y: run.stronghold });
-        if (run.end) endPoints.push({ x: r, y: run.end });
-    }
-
-    for (const el of document.getElementsByClassName("entry-chart")) {
-        const ctx = el.getContext("2d");
-
-        new Chart(ctx, {
-            type: "line",
-            data: {
-                datasets: [
-                    {
-                        label: "Nether Entry",
-                        data: netherPoints,
-                        showLine: true,
-                        fill: "start",
-                        pointBackgroundColor: C_NETHER,
-                        borderColor: C_NETHER,
-                        backgroundColor: C_OVERWORLD + "70"
-                    },
-                    {
-                        label: "Struct 1 Entry",
-                        data: struct1Points,
-                        showLine: true,
-                        fill: "start",
-                        pointBackgroundColor: C_BASTION,
-                        borderColor: C_BASTION,
-                        backgroundColor: C_NETHER + "70"
-                    },
-                    {
-                        label: "Struct 2 Entry",
-                        data: struct2Points,
-                        showLine: true,
-                        fill: "start",
-                        pointBackgroundColor: C_FORT,
-                        borderColor: C_FORT,
-                        backgroundColor: C_BASTION + "70"
-                    },
-                    {
-                        label: "Blind",
-                        data: blindPoints,
-                        showLine: true,
-                        fill: "start",
-                        pointBackgroundColor: C_BLIND,
-                        borderColor: C_BLIND,
-                        backgroundColor: C_FORT + "70"
-                    },
-                    {
-                        label: "Stronghold Entry",
-                        data: strongholdPoints,
-                        showLine: true,
-                        fill: "start",
-                        pointBackgroundColor: C_STRONGHOLD,
-                        borderColor: C_STRONGHOLD,
-                        backgroundColor: C_BLIND + "70"
-                    },
-                    {
-                        label: "End Entry",
-                        data: endPoints,
-                        showLine: true,
-                        fill: "start",
-                        pointBackgroundColor: C_END,
-                        borderColor: C_END,
-                        backgroundColor: C_STRONGHOLD + "70"
-                    }
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: "linear",
-                        parsing: false,
-                        title: {display: true, text: "Run #"}
-                    },
-                    y: {
-                        type: "linear",
-                        parsing: false,
-                        min: 0,
-                        title: {display: true, text: "Entry Time"},
-                        ticks: {
-                            callback: (value) => formatMMSS(Number(value))
-                        },
-                    },
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: (c) => `${c.dataset.label ?? ""}: ${formatMMSS(c.parsed?.y)}`,
-                        },
-                    },
-                },
-            },
+    const dailyStats = {};
+    runs.forEach(run => {
+        const ts = toUnixTimestamp(run.date);
+        if (!dailyStats[ts]) dailyStats[ts] = { counts: {}, sums: {} };
+        
+        categories.forEach(cat => {
+            const val = run[cat.key === 'struct1' ? (run.bastion ? 'bastion' : 'fort') : cat.key];
+            if (val) {
+                dailyStats[ts].sums[cat.key] = (dailyStats[ts].sums[cat.key] || 0) + val;
+                dailyStats[ts].counts[cat.key] = (dailyStats[ts].counts[cat.key] || 0) + 1;
+            }
         });
-    }
+    });
+
+    const dates = Object.keys(dailyStats).sort();
+    const datasets = categories.reverse().map(cat => ({
+        label: cat.label,
+        data: dates.map(d => ({
+            x: Number(d),
+            y: dailyStats[d].counts[cat.key] ? dailyStats[d].sums[cat.key] / dailyStats[d].counts[cat.key] : null
+        })),
+        borderColor: cat.color,
+        backgroundColor: cat.color + "20", // Light area fill
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6
+    }));
+
+    const ctx = document.querySelector(".avg-entry-chart").getContext("2d");
+    new Chart(ctx, {
+        type: "line",
+        data: { datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { 
+                    type: "linear", 
+                    grid: { color: "#30363d" },
+                    ticks: { callback: v => new Date(v).toLocaleDateString('en-US', {month:'short', day:'numeric'}) }
+                },
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: "#30363d" },
+                    ticks: { callback: v => formatMMSS(v) }
+                }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { color: '#8b949e' } }
+            }
+        }
+    });
 }
 
 export function buildAvgEntryChart(runs) {

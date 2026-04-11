@@ -1,55 +1,41 @@
-:root {
-    --background: #0d1117;
-    --background-accent: #161b22;
-    --card-bg: #21262d;
-    --border: #30363d;
-    --accent: #58a6ff;
-    --text-muted: #8b949e;
-    /* Keep your existing split colors */
+.prediction-hero {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+    border-bottom: 2px solid #30363d;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--background);
+.record-date-value {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #58a6ff;
+    display: block;
+    margin: 10px 0;
 }
 
-/* The Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
     padding: 20px;
 }
 
-/* Stat Cards */
 .stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: #161b22;
     padding: 20px;
-    text-align: left;
-    transition: transform 0.2s ease;
-}
-
-.stat-card:hover {
-    border-color: var(--accent);
-}
-
-.stat-card h3 {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin: 0 0 10px 0;
+    border-radius: 12px;
+    border: 1px solid #30363d;
+    text-align: center;
 }
 
 .stat-value {
     font-size: 2rem;
-    font-weight: 800;
+    font-weight: bold;
+    color: #eee;
     display: block;
 }
 
 .stat-subtext {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-family: "JetBrains Mono", monospace;
+    color: #8b949e;
+    font-size: 0.9rem;
 }
