@@ -1,36 +1,43 @@
-name: Manual VOD Capture & Commit
+name: Batch VOD Automator
 
 on:
-  workflow_dispatch:
-    inputs:
-      vod_url:
-        description: "Twitch VOD URL (e.g. https://www.twitch.tv/videos/123)"
-        required: true
-        type: string
-      start_timestamp:
-        description: "Start timestamp (HH:MM:SS)"
-        required: true
-        default: "00:00:00"
-        type: string
-      vod_date:
-        description: "Label used for output filename (e.g. 'Feb 11')"
-        required: true
-        type: string
+  workflow_dispatch: {}
 
 permissions:
   contents: write
 
-concurrency:
-  group: vod-capture
-  cancel-in-progress: false
-
 jobs:
-  vod_capture:
+  batch_capture:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        vod:
+          - date: "Mar 30"
+            url: "https://www.twitch.tv/videos/2735573154"
+            time: "01:17:30"
+          - date: "Apr 1"
+            url: "https://www.twitch.tv/videos/2737195524"
+            time: "01:03:00"
+          - date: "Apr 4"
+            url: "https://www.twitch.tv/videos/2739738173"
+            time: "01:25:34"
+          - date: "Apr 5"
+            url: "https://www.twitch.tv/videos/2740586888"
+            time: "01:33:00"
+          - date: "Apr 7"
+            url: "https://www.twitch.tv/videos/2742175820"
+            time: "01:08:00"
+          - date: "Apr 9"
+            url: "https://www.twitch.tv/videos/2743769025"
+            time: "01:00:00"
 
     steps:
-      - name: Checkout
+      - name: Checkout latest code
         uses: actions/checkout@v4
+        with:
+          ref: master  
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -57,9 +64,9 @@ jobs:
       - name: Run VOD capturer
         env:
           PYTHONUNBUFFERED: "1"
-          VOD_URL: ${{ inputs.vod_url }}
-          START_TIMESTAMP: ${{ inputs.start_timestamp }}
-          VOD_DATE: ${{ inputs.vod_date }}
+          VOD_URL: ${{ matrix.vod.url }}
+          START_TIMESTAMP: ${{ matrix.vod.time }}
+          VOD_DATE: ${{ matrix.vod.date }}
         run: |
           python python/run.py
 
@@ -72,6 +79,9 @@ jobs:
 
       - name: Commit and push updated data
         run: |
+          # Fetch the absolute latest repo state before committing to prevent merge conflicts
+          git pull --rebase --autostash origin master || true
+          
           git add -A data 2>/dev/null || true
 
           if git diff --cached --quiet; then
@@ -79,7 +89,6 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Update VOD capture: ${{ inputs.vod_date }} ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git commit -m "Update VOD capture: ${{ matrix.vod.date }} ($(date -u +'%Y-%m-%d %H:%M UTC'))"
 
-          git pull --rebase --autostash || true
           git push
