@@ -115,11 +115,8 @@ export class Runlist {
             window.open(`${run.vod}?t=${timestamp}s`, "_blank");
         });
     }
-
-    rebuildRuns() {
-        // Add time labels every minute
+rebuildRuns() {
         const runElement = this.element.querySelector(".runs");
-
         const secs = Math.max(...this.runs.map(r => seconds(r.runTime)));
         runElement.style.width = `${secs / (60 / RUNS_PER_MINUTE) + RUNS_MARGIN + 70}px`;
 
@@ -130,111 +127,83 @@ export class Runlist {
 
         runElement.innerHTML = `<div class="run-label-container">${labelString}</div>`;
 
-        const outRuns = [];
-        for (let r = this.runs.length - 1; r > 0; r--) {
-            const run = this.runs[r];
+        // 1. MAP AND SCORE THE RUNS
+        let outRuns = this.runs.map((run, r) => {
+            let score = 0;
+            if (run.finish) score += 10000;
+            if (run.end) score += 5000;
+            if (run.stronghold) score += 1000;
+            if (run.blind) score += 500;
+            if (run.nether && run.nether < 180) score += 200; 
+            
+            return { ...run, forsenScore: score, originalIndex: r };
+        });
 
-            const netherEntry = run.nether ?? 0;
-            const struct1Entry = !run.bastion && !run.fort ? 0
-                : !run.fort ? run.bastion
-                    : !run.bastion ? run.fort
-                        : Math.min(run.bastion, run.fort);
-            const struct2Entry = run.bastion && run.fort ? Math.max(run.bastion, run.fort) : 0;
-            const blindEntry = run.blind ?? 0;
-            const strongholdEntry = run.stronghold ?? 0;
-            const endEntry = run.end ?? 0;
-            const finishEntry = run.finish ?? 0;
+        // 2. FILTER
+        const splitFilter = this.element.querySelector(".runs-split-filter").value;
+        outRuns = outRuns.filter(run => {
+            if (splitFilter === "all") return true;
+            if (splitFilter === "nether") return !!run.nether;
+            if (splitFilter === "struct1") return !!(run.bastion || run.fort);
+            if (splitFilter === "struct2") return !!(run.bastion && run.fort);
+            if (splitFilter === "blind") return !!run.blind;
+            if (splitFilter === "stronghold") return !!run.stronghold;
+            if (splitFilter === "end") return !!run.end;
+            if (splitFilter === "finish") return !!run.finish;
+            return true;
+        });
 
-            const splitFilter = this.element.querySelector(".runs-split-filter").value;
-            if (splitFilter === "nether" && !netherEntry) continue;
-            if (splitFilter === "struct1" && !struct1Entry) continue;
-            if (splitFilter === "struct2" && !struct2Entry) continue;
-            if (splitFilter === "blind" && !blindEntry) continue;
-            if (splitFilter === "stronghold" && !strongholdEntry) continue;
-            if (splitFilter === "end" && !endEntry) continue;
-            if (splitFilter === "finish" && !finishEntry) continue;
-
-            const lastTime = seconds(run.runTime);
-            const overworldTime = netherEntry ? netherEntry : lastTime;
-            const netherTime = netherEntry ? (struct1Entry > 0 ? struct1Entry - netherEntry : lastTime - netherEntry) : 0;
-            const struct1Time = struct1Entry ? (struct2Entry > 0 ? struct2Entry - struct1Entry : lastTime - struct1Entry) : 0;
-            const struct2Time = struct2Entry ? (blindEntry > 0 ? blindEntry - struct2Entry : lastTime - struct2Entry) : 0;
-            const blindTime = blindEntry ? (strongholdEntry > 0 ? strongholdEntry - blindEntry : lastTime - blindEntry) : 0;
-            const strongholdTime = strongholdEntry ? (endEntry > 0 ? endEntry - strongholdEntry : lastTime - strongholdEntry) : 0;
-            const endTime = endEntry ? (finishEntry > 0 ? finishEntry - endEntry : lastTime - endEntry) : 0;
-            const finishTime = finishEntry ? lastTime - finishEntry : 0;
-
-
-            const segments = [
-                { w: overworldTime, color: "#55ee55" },
-                { w: netherTime, color: C_NETHER },
-                { w: struct1Time, color: run.fort < run.bastion ? C_FORT : C_BASTION },
-                { w: struct2Time, color: run.fort > run.bastion ? C_FORT : C_BASTION },
-                { w: blindTime, color: C_BLIND },
-                { w: strongholdTime, color: C_STRONGHOLD },
-                { w: endTime, color: C_END },
-                { w: finishTime, color: C_FINISH }
-            ].filter(s => s.w > 0);
-
-            const deathIcon = !run.death ? "" :
-                run.death.includes("lava") ? `<img src="./static/forsenHoppedin.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("burn") ? `<img src="./static/forsenFire.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("fell") || run.death.includes("ground") ? `<img src="./static/forsenGravity.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("Pig") ? `<img src="./static/piglin.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("Hog") ? `<img src="./static/hoglin.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("ither") ? `<img src="./static/wither.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("Skel") ? `<img src="./static/skeleton.webp" height="14" title="${run.death}" alt="">` :
-                run.death.includes("Blaze") ? `<img src="./static/blaze.webp" height="14" title="${run.death}" alt="">` :
-                `<span style="color: #ee8888">${run.death}</span>`;
-
-            outRuns.push({
-                segments, deathIcon, r, runTime: run.runTime, date: run.date, vod: run.vod, timestamps: run.timestamps,
-                deathStart: run.deathStart, deathEnd: run.deathEnd,
-                netherEntry, struct1Entry, struct2Entry, blindEntry, strongholdEntry, endEntry, finishEntry
-            });
+        // 3. SORT
+        const sort = this.element.querySelector(".runs-sort").value;
+        if (sort === "date") {
+            outRuns.sort((a, b) => b.originalIndex - a.originalIndex);
+        } else if (sort === "duration") {
+            outRuns.sort((a, b) => seconds(b.runTime) - seconds(a.runTime));
+        } else {
+            // Default: Sort by the new Forsen Score we created
+            outRuns.sort((a, b) => b.forsenScore - a.forsenScore);
         }
 
-        const sort = this.element.querySelector(".runs-sort").value;
-        if (sort === "nether") outRuns.sort((a, b) => (a.netherEntry || Infinity) - (b.netherEntry || Infinity));
-        else if (sort === "struct1") outRuns.sort((a, b) => (a.struct1Entry || Infinity) - (b.struct1Entry || Infinity));
-        else if (sort === "struct2") outRuns.sort((a, b) => (a.struct2Entry || Infinity) - (b.struct2Entry || Infinity));
-        else if (sort === "blind") outRuns.sort((a, b) => (a.blindEntry || Infinity) - (b.blindEntry || Infinity));
-        else if (sort === "stronghold") outRuns.sort((a, b) => (a.strongholdEntry || Infinity) - (b.strongholdEntry || Infinity));
-        else if (sort === "end") outRuns.sort((a, b) => (a.endEntry || Infinity) - (b.endEntry || Infinity));
-        else if (sort === "finish") outRuns.sort((a, b) => (a.finishEntry || Infinity) - (b.finishEntry || Infinity));
-
-        else if (sort === "death") outRuns.sort((a, b) => b.deathIcon.localeCompare(a.deathIcon));
-        else if (sort === "duration") outRuns.sort((a, b) => seconds(b.runTime) - seconds(a.runTime));
-
+        // 4. RENDER
         let runStr = "";
         for (const outRun of outRuns) {
+            // Calculate time difference for the "LIVE" indicator
             const timeDiff = utcDiff(outRun.timestamps[outRun.timestamps.length - 1]);
 
-            const date = outRun.vod ? outRun.date : "LIVE";
+            // Determine if the run is from a VOD or is currently live
+            const dateStr = outRun.vod ? outRun.date : "LIVE";
+            
+            // Format the VOD link with the specific timestamp
             const link = outRun.vod ? `href="${outRun.vod}?t=${outRun.timestamps[0].replace(":", "h").replace(":", "m")}s"` : "";
-            const liveStyle = !outRun.vod && outRun.r === this.runs.length - 1 && timeDiff > 0 && timeDiff < 60 * 15
-                ? `class="live-run"` : "";
+            
+            // Add a pulse animation if the run is live and recent (within 15 mins)
+            const liveClass = !outRun.vod && outRun.originalIndex === this.runs.length - 1 && timeDiff > 0 && timeDiff < 900
+                ? 'class="live-run"' : "";
 
             runStr += `
-            <div>
-                <span style="display: inline-block; width: ${RUNS_MARGIN}px;">
-                    #${outRun.r} - <a target="_blank" ${liveStyle} ${link}">${date} ${outRun.timestamps[0]}</a>
-                </span>
-                <div class="run-bar-container" data-run="${outRun.r}">
-                    ${outRun.segments.map((s, i) => `<div
-                        class="run-bar${i === 0 ? " first" : ""} ${i === outRun.segments.length - 1 ? " last" : ""}"
-                        style="width: ${s.w * (RUNS_PER_MINUTE / 60)}px; background-color: ${s.color};"
-                      ></div>`).join("")}
-                    ${outRun.deathStart ? `<div class="run-death-indicator" style="left: ${(outRun.deathStart - 3) * (RUNS_PER_MINUTE / 60)}px; width: ${(outRun.deathEnd - outRun.deathStart + 3) * (RUNS_PER_MINUTE / 60)}px;"></div>` : ""}
+            <div class="run-entry" style="border-bottom: 1px solid #30363d; padding: 10px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; width: 180px;">
+                        #${outRun.originalIndex} - <a target="_blank" ${liveClass} ${link}>${dateStr} ${outRun.timestamps[0]}</a>
+                    </span>
+                    
+                    <div class="run-bar-container" style="flex-grow: 1; margin: 0 15px; position: relative; height: 12px; display: flex; background: #161b22; border-radius: 6px; overflow: hidden;">
+                        ${outRun.segments.map((s, i) => `
+                            <div class="run-bar" 
+                                 style="width: ${s.w * (RUNS_PER_MINUTE / 60)}px; background-color: ${s.color}; height: 100%;">
+                            </div>`).join("")}
                     </div>
-                <span class="run-bar-desc">${outRun.deathIcon} ${outRun.runTime}</span>
-            </div>
-        `.replaceAll(/>\n\s+/g, ">");
-        }
 
+                    <span style="min-width: 120px; text-align: right; font-size: 0.9rem;">
+                        ${outRun.deathIcon} <span style="color: #8b949e; margin-left: 8px;">${outRun.runTime}</span>
+                    </span>
+                </div>
+            </div>
+            `.replace(/>\n\s+/g, ">"); // Minify string slightly for performance
+        }
         runElement.innerHTML += runStr;
     }
-}
+} 
 
 function utcDiff(timeStr) {
     const [h, m, s] = timeStr.split(":").map(Number);
@@ -242,34 +211,10 @@ function utcDiff(timeStr) {
     return (now.getUTCHours() - h) * 3600 + (now.getUTCMinutes() - m) * 60 + (s - now.getUTCSeconds() - s);
 }
 
-
 export const isDeadRun = (run) => {
-    const netherLimit = 300; // 5 mins
-    const strongholdLimit = 900; // 15 mins
-    
+    const netherLimit = 300; 
+    const strongholdLimit = 900; 
     if (run.nether > netherLimit) return true;
     if (run.stronghold > strongholdLimit) return true;
     return false;
 };
-
-
-rebuildRuns() {
-    let outRuns = this.runs.map(run => {
-        // Assign a "Forsen Score"
-        let score = 0;
-        if (run.finish) score += 10000;
-        if (run.end) score += 5000;
-        if (run.stronghold) score += 1000;
-        if (run.blind) score += 500;
-        
-        // Bonus for fast nethers
-        if (run.nether && run.nether < 180) score += 200; 
-        
-        return { ...run, forsenScore: score };
-    });
-
-    // Sort by score descending
-    outRuns.sort((a, b) => b.forsenScore - a.forsenScore);
-
-    // Now render outRuns...
-}
