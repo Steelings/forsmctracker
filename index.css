@@ -237,3 +237,93 @@ select {
     justify-content: center;
     align-items: center;
 }
+
+:root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --text: #f0f6fc;
+    --muted: #8b949e;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding-top: 70px; /* Space for fixed navbar */
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* --- MODERN NAVBAR --- */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 1000;
+}
+
+.nav-logo {
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-item {
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 6px;
+    color: var(--muted);
+    transition: 0.2s;
+}
+
+.nav-item:hover, .nav-item.active {
+    color: var(--accent);
+    background: rgba(88, 166, 255, 0.1);
+}
+
+/* --- RESPONSIVE DASHBOARD --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.pie-card {
+    grid-column: span 2;
+    min-height: 380px;
+}
+
+@media (max-width: 850px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .pie-card { grid-column: span 1; }
+    .navbar { padding: 0 15px; }
+    .nav-logo span { display: none; } /* Hide BETA tag on mobile */
+}
+
+/* --- TAB CONTROL --- */
+.tab-content { display: none; }
+.active-tab { display: block; }
