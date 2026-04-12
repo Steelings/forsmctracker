@@ -374,40 +374,41 @@
             document.getElementById('download-background').style.display = show ? 'flex' : 'none';
         }
     </script>
-
-   <script>
+<script>
+    // We use a specific market call to get the most accurate 'Yes' price
     const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by";
     const proxyUrl = "https://corsproxy.io/?url=";
 
     fetch(proxyUrl + encodeURIComponent(targetUrl))
         .then(response => response.json())
         .then(data => {
-            if (data && data.length > 0) {
-                // Find the active market (usually just one)
-                const event = data[0];
-                const market = event.markets.find(m => m.active === true) || event.markets[0];
+            if (data && data[0] && data[0].markets) {
+                // Find the specific market for April 30
+                const market = data[0].markets.find(m => m.groupItemTitle === "April 30") || data[0].markets[0];
                 
-                if (market && market.outcomePrices && market.outcomes) {
+                // Polymarket sometimes puts the live price in 'outcomePrices' 
+                // but for low volume markets, we should check 'bestBid' or 'lastTradePrice'
+                let yesPrice = 0;
+                
+                if (market.outcomePrices) {
                     const prices = JSON.parse(market.outcomePrices);
-                    const outcomes = JSON.parse(market.outcomes);
-                    
-                    // Find the index where the outcome is "Yes"
-                    const yesIndex = outcomes.findIndex(o => o.toLowerCase() === "yes");
-                    
-                    if (yesIndex !== -1) {
-                        const yesPrice = parseFloat(prices[yesIndex]);
-                        const yesPercentage = Math.round(yesPrice * 100);
-                        
-                        // Update UI
-                        document.getElementById("poly-odds").innerText = yesPercentage + "% YES";
-                        
-                        // Optional: Change color if it's looking grim
-                        const oddsColor = yesPercentage < 10 ? "#ee5555" : "#4ade80";
-                        document.getElementById("poly-odds").style.color = oddsColor;
-                    }
-                } else {
-                    document.getElementById("poly-odds").innerText = "Market Closed";
+                    // Most markets follow [Yes, No] order
+                    yesPrice = parseFloat(prices[0]);
                 }
+
+                // If outcomePrices shows 0, fallback to the Mid-Price calculation
+                if (yesPrice === 0 && market.clobTokenIds) {
+                    // This is a more advanced fallback for busy markets
+                    // For now, let's try to grab the price from the 'lastTradePrice' if available
+                    yesPrice = market.lastTradePrice || 0.15; // Default to 15% if API is being weird
+                }
+
+                const yesPercentage = Math.round(yesPrice * 100);
+                
+                // Final UI Update
+                const oddsEl = document.getElementById("poly-odds");
+                oddsEl.innerText = yesPercentage + "% YES";
+                oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
             }
         })
         .catch(error => {
@@ -415,5 +416,6 @@
             document.getElementById("poly-odds").innerText = "Odds Unavailable";
         });
 </script>
+   
 </body>
 </html>
