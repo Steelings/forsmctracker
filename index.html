@@ -154,18 +154,28 @@
 
     <script type="module">
         import { seconds } from "./js/helpers/utils.js";
-        import vodRuns from "./data/stripped_runs.json" with { type: "json" };
+        // REMOVED: The static import for stripped_runs.json is gone!
         import { buildDailySummary, buildDeathPieChart } from "./js/summary.js";
         import { buildAvgEntryChart } from "./js/graphs.js";
         import { buildOdds, buildPredictions } from "./js/odds.js";
         import { Runlist } from "./js/runlist.js";
 
         async function init() {
+            let vodRuns = [];
             let liveRuns = [];
+            
             try {
-                const response = await fetch("./data/live_stripped_runs.json");
-                if (response.ok) liveRuns = await response.json();
-            } catch (e) { console.log("No live data found."); }
+                // The ?t= timestamp is a cache-buster. It forces the browser to fetch the newest data every time!
+                const timestamp = new Date().getTime();
+                
+                const vodResponse = await fetch(`./data/stripped_runs.json?t=${timestamp}`);
+                if (vodResponse.ok) vodRuns = await vodResponse.json();
+
+                const liveResponse = await fetch(`./data/live_stripped_runs.json?t=${timestamp}`);
+                if (liveResponse.ok) liveRuns = await liveResponse.json();
+            } catch (e) { 
+                console.log("Error loading data."); 
+            }
 
             const runs = vodRuns.concat(liveRuns);
 
@@ -185,16 +195,13 @@
                     if (r.nether) netherCount++;
                 });
 
-                // Math for total playtime
                 const hours = Math.floor(totalSecs / 3600);
                 const minutes = Math.floor((totalSecs % 3600) / 60);
                 
-                // Math for average run length
                 const avgSecs = Math.floor(totalSecs / runs.length);
                 const avgM = Math.floor(avgSecs / 60);
                 const avgS = avgSecs % 60;
 
-                // Push to UI
                 const elTotal = document.getElementById('insight-total-runs');
                 const elPlaytime = document.getElementById('insight-playtime');
                 const elNether = document.getElementById('insight-nether-rate');
