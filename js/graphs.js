@@ -1,142 +1,151 @@
-import {
-    C_BASTION,
-    C_BLIND,
-    C_END,
-    C_FORT,
-    C_NETHER,
-    C_OVERWORLD,
-    C_STRONGHOLD,
-    formatMMSS,
-    pushOrCreate
-} from "./helpers/utils.js";
+import { C_NETHER, C_STRONGHOLD, C_END } from "./helpers/utils.js";
 
-Chart.defaults.borderColor = "#30363d";
-Chart.defaults.color = "#8b949e";
-Chart.defaults.font.family = "JetBrains Mono, monospace";
-
-export function buildEntryChart(runs) {
-    const netherPoints = [];
-    const struct1Points = [];
-    const strongholdPoints = [];
-    const endPoints = [];
-
-    for (let r = runs.length - 1; r > 0; r--) {
-        const run = runs[r];
-        if (run.nether) netherPoints.push({ x: r, y: run.nether });
-        if (run.bastion || run.fort) struct1Points.push({ x: r, y: Math.min(run.bastion ?? Infinity, run.fort ?? Infinity) });
-        if (run.stronghold) strongholdPoints.push({ x: r, y: run.stronghold });
-        if (run.end) endPoints.push({ x: r, y: run.end });
-    }
-
-    const el = document.querySelector(".entry-chart");
-    if (!el) return;
-
-    new Chart(el.getContext("2d"), {
-        type: "line",
-        data: {
-            datasets: [
-                { label: "End", data: endPoints, borderColor: C_END, backgroundColor: C_END + "20", fill: true },
-                { label: "Stronghold", data: strongholdPoints, borderColor: C_STRONGHOLD, backgroundColor: C_STRONGHOLD + "20", fill: true },
-                { label: "Nether", data: netherPoints, borderColor: C_NETHER, backgroundColor: C_NETHER + "20", fill: true }
-            ],
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-}
+let paceChart = null;
 
 export function buildAvgEntryChart(runs) {
-    const categories = [
-        { key: 'nether', color: C_NETHER, label: 'Nether' },
-        { key: 'struct1', color: C_BASTION, label: 'Structure' },
-        { key: 'stronghold', color: C_STRONGHOLD, label: 'Stronghold' },
-        { key: 'end', color: C_END, label: 'End' }
-    ];
+    const ctx = document.querySelector('.avg-entry-chart').getContext('2d');
+    if (paceChart) paceChart.destroy();
 
-    const dailyStats = {};
+    // Group runs by date to get daily averages
+    const dailyData = {};
     runs.forEach(run => {
-        const ts = new Date(`${run.date} ${new Date().getFullYear()}`).getTime();
-        if (!dailyStats[ts]) dailyStats[ts] = { counts: {}, sums: {} };
+        if (!run.date) return;
         
-        categories.forEach(cat => {
-            const val = cat.key === 'struct1' ? (run.bastion || run.fort) : run[cat.key];
-            if (val) {
-                dailyStats[ts].sums[cat.key] = (dailyStats[ts].sums[cat.key] || 0) + val;
-                dailyStats[ts].counts[cat.key] = (dailyStats[ts].counts[cat.key] || 0) + 1;
-            }
-        });
+        // Convert 'Mar 24' to a real timestamp so the chart can space them correctly
+        const dateKey = new Date(run.date).getTime(); 
+        
+        if (!dailyData[dateKey]) {
+            dailyData[dateKey] = { nethers: [], structs: [], strongholds: [], ends: [] };
+        }
+        
+        if (run.nether) dailyData[dateKey].nethers.push(run.nether);
+        // Assuming your JSON tracks struct 1 / blind / etc. We'll use blind as structure for the chart if struct isn't explicitly defined.
+        if (run.blind) dailyData[dateKey].structs.push(run.blind); 
+        if (run.stronghold) dailyData[dateKey].strongholds.push(run.stronghold);
+        if (run.end) dailyData[dateKey].ends.push(run.end);
     });
 
-    const dates = Object.keys(dailyStats).sort();
-    const datasets = categories.map(cat => ({
-        label: cat.label,
-        data: dates.map(d => ({
-            x: Number(d),
-            y: dailyStats[d].counts[cat.key] ? dailyStats[d].sums[cat.key] / dailyStats[d].counts[cat.key] : null
-        })),
-        borderColor: cat.color,
-        backgroundColor: cat.color + "15",
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2
-    }));
+    // Helper to average arrays
+    const getAvg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
 
-    const canvas = document.querySelector(".avg-entry-chart");
-    if (!canvas) return;
+    const netherPoints = [];
+    const structPoints = [];
+    const strongPoints = [];
+    const endPoints = [];
 
-    new Chart(canvas.getContext("2d"), {
-        type: "line",
-        data: { datasets },
+    // Sort by timestamp just in case
+    const sortedDates = Object.keys(dailyData).sort((a, b) => Number(a) - Number(b));
+
+    sortedDates.forEach(date => {
+        const d = dailyData[date];
+        const x = Number(date); // The X axis timestamp
+        
+        const nAvg = getAvg(d.nethers);
+        const stAvg = getAvg(d.structs);
+        const shAvg = getAvg(d.strongholds);
+        const eAvg = getAvg(d.ends);
+
+        if (nAvg) netherPoints.push({ x, y: nAvg });
+        if (stAvg) structPoints.push({ x, y: stAvg });
+        if (shAvg) strongPoints.push({ x, y: shAvg });
+        if (eAvg) endPoints.push({ x, y: eAvg });
+    });
+
+    paceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'Nether',
+                    data: netherPoints,
+                    borderColor: C_NETHER,
+                    backgroundColor: C_NETHER,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 3
+                },
+                {
+                    label: 'Structure',
+                    data: structPoints,
+                    borderColor: '#8b949e', // Grey
+                    backgroundColor: '#8b949e',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 3
+                },
+                {
+                    label: 'Stronghold',
+                    data: strongPoints,
+                    borderColor: C_STRONGHOLD,
+                    backgroundColor: C_STRONGHOLD,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    showLine: false // Usually sparse, scatter looks better
+                },
+                {
+                    label: 'End',
+                    data: endPoints,
+                    borderColor: C_END,
+                    backgroundColor: C_END,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    showLine: false
+                }
+            ]
+        },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Prevents the squishing
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            maintainAspectRatio: false,
             scales: {
-                x: { 
-                    type: "linear", 
-                    grid: {
-                        display: false // Cleans up the background
-                    },
-                    ticks: { 
+                x: {
+                    type: 'linear', // Using linear for time allows easy spacing
+                    ticks: {
                         color: '#8b949e',
-                        font: { family: 'JetBrains Mono', size: 10 },
-                        callback: v => new Date(v).toLocaleDateString('en-US', {month:'short', day:'numeric'}) 
-                    }
+                        callback: function(value) {
+                            // Format X-axis bottom labels
+                            return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }
+                    },
+                    grid: { color: '#30363d' }
                 },
-                y: { 
-                    beginAtZero: true, 
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.05)' // Subtle guide lines
-                    },
-                    ticks: { 
+                y: {
+                    reverse: true, // Faster times are at the top
+                    ticks: {
                         color: '#8b949e',
-                        font: { family: 'JetBrains Mono', size: 10 },
-                        callback: v => formatMMSS(v) 
-                    }
+                        callback: function(value) {
+                            // Format Y-axis left labels as MM:SS
+                            const m = Math.floor(value / 60);
+                            const s = Math.floor(value % 60).toString().padStart(2, '0');
+                            return `${m}:${s}`;
+                        }
+                    },
+                    grid: { color: '#30363d' }
                 }
             },
-            plugins: { 
-                legend: { 
-                    position: 'top',
-                    align: 'end',
-                    labels: { 
-                        color: '#8b949e',
-                        boxWidth: 12,
-                        usePointStyle: true,
-                        pointStyle: 'circle',
-                        font: { family: 'JetBrains Mono', size: 12 }
-                    } 
+            plugins: {
+                legend: {
+                    labels: { color: '#c9d1d9', usePointStyle: true, boxWidth: 8 }
                 },
                 tooltip: {
-                    backgroundColor: '#161b22',
-                    borderColor: '#30363d',
-                    borderWidth: 1,
-                    titleColor: '#58a6ff',
-                    bodyFont: { family: 'JetBrains Mono' },
                     callbacks: {
-                        label: (context) => ` ${context.dataset.label}: ${formatMMSS(context.raw.y)}`
+                        // FIX: Converts the giant X-axis number into a clean date on Hover
+                        title: function(tooltipItems) {
+                            const rawVal = tooltipItems[0].parsed.x;
+                            return new Date(rawVal).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                            });
+                        },
+                        // Fix: Formats the Y-axis hover value into MM:SS
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            const m = Math.floor(val / 60);
+                            const s = Math.floor(val % 60).toString().padStart(2, '0');
+                            return `${context.dataset.label}: ${m}:${s}`;
+                        }
                     }
                 }
             }

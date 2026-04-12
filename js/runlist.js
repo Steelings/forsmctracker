@@ -67,11 +67,13 @@ export class Runlist {
             if (run.nether && run.nether < 180) score += 200;
 
             const lastTime = seconds(run.runTime);
+            
+            // Added explicit labels for the UI tooltips
             const segments = [
-                { w: run.nether || lastTime, color: "#55ee55" }, 
-                { w: run.nether ? (run.stronghold ? run.stronghold - run.nether : lastTime - run.nether) : 0, color: C_NETHER },
-                { w: run.stronghold ? (run.end ? run.end - run.stronghold : lastTime - run.stronghold) : 0, color: C_STRONGHOLD },
-                { w: run.end ? (lastTime - run.end) : 0, color: C_END }
+                { label: "Overworld", w: run.nether || lastTime, color: "#55ee55" }, 
+                { label: "Nether", w: run.nether ? (run.stronghold ? run.stronghold - run.nether : lastTime - run.nether) : 0, color: C_NETHER },
+                { label: "Stronghold", w: run.stronghold ? (run.end ? run.end - run.stronghold : lastTime - run.stronghold) : 0, color: C_STRONGHOLD },
+                { label: "End", w: run.end ? (lastTime - run.end) : 0, color: C_END }
             ].filter(s => s.w > 0);
 
             const deathData = getDeathDetails(run.death);
@@ -94,7 +96,7 @@ export class Runlist {
         runElement.innerHTML = processedRuns.map(outRun => {
             const dateStr = outRun.vod ? outRun.date : "LIVE";
             
-            // Updated Twitch URL generation (with -5 second stream delay fix)
+     
             let link = "";
             if (outRun.vod && outRun.timestamps && outRun.timestamps.length > 0) {
                 const lastStamp = outRun.timestamps[outRun.timestamps.length - 1];
@@ -127,14 +129,12 @@ export class Runlist {
                 </div>
             `;
 
-            // NEW: Clean up the Run Time display for perfect UI
+            // Advanced Run Time Formatting (MM:SS.ms)
             let formattedTime = outRun.runTime || "-";
-            const timeParts = formattedTime.split(/[.:]/); // Splits by either dot or colon
+            const timeParts = formattedTime.split(/[.:]/); 
             if (timeParts.length === 3) {
-                // Formats MM.SS.MS to MM:SS + tiny MS
                 formattedTime = `${timeParts[0]}<span style="color: #8b949e;">:</span>${timeParts[1]}<span style="font-size: 0.7em; color: #8b949e;">.${timeParts[2]}</span>`;
             } else if (timeParts.length === 4) {
-                // Formats HH.MM.SS.MS
                 formattedTime = `${timeParts[0]}<span style="color: #8b949e;">:</span>${timeParts[1]}<span style="color: #8b949e;">:</span>${timeParts[2]}<span style="font-size: 0.7em; color: #8b949e;">.${timeParts[3]}</span>`;
             }
 
@@ -148,7 +148,7 @@ export class Runlist {
                 
                 <div style="flex-grow: 1; height: 8px; display: flex; background: #21262d; border-radius: 4px; overflow: hidden; margin: 0 20px;">
                     ${outRun.segments.map(s => `
-                        <div style="width: ${s.w * (RUNS_PER_MINUTE / 60)}px; background-color: ${s.color}; height: 100%;"></div>
+                        <div title="${s.label} (${Math.floor(s.w / 60)}m ${Math.floor(s.w % 60)}s)" style="width: ${s.w * (RUNS_PER_MINUTE / 60)}px; background-color: ${s.color}; height: 100%; cursor: help;"></div>
                     `).join("")}
                 </div>
 
