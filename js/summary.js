@@ -180,48 +180,67 @@ export function buildProjectionChart(runsByDay) {
     const ctx = document.getElementById('projection-chart');
     if (!ctx) return;
 
-    // 1. Get the dates in order
     const dates = Object.keys(runsByDay).sort((a, b) => new Date(a) - new Date(b));
     
-    // 2. We need a "Rolling Average" of his performance
-    // Let's assume the record requires ~1,000 runs on average (standard Minecraft luck)
-    const AVG_RUNS_TO_RECORD = 1000; 
+    const TOTAL_ESTIMATED_RUNS_NEEDED = 5000; 
     
     let cumulativeRuns = 0;
-    const projectionData = dates.map((date) => {
+    const projectionData = dates.map((date, index) => {
         cumulativeRuns += runsByDay[date].length;
         
-        // Expected Days = (Remaining Runs needed) / (Avg Runs per Stream)
-        const avgRunsPerStream = cumulativeRuns / (dates.indexOf(date) + 1);
-        const remainingRuns = Math.max(0, AVG_RUNS_TO_RECORD - cumulativeRuns);
-        const expectedDays = remainingRuns / avgRunsPerStream;
+        const streamsSoFar = index + 1;
+        const avgRunsPerStream = cumulativeRuns / streamsSoFar;
+ 
+        const remainingRuns = Math.max(0, TOTAL_ESTIMATED_RUNS_NEEDED - cumulativeRuns);
+        
+        let expectedDays = remainingRuns / avgRunsPerStream;
+
+        
+        if (expectedDays <= 0) expectedDays = 0.5; 
 
         return expectedDays.toFixed(1);
     });
+    const existingChart = Chart.getChart("projection-chart");
+    if (existingChart) existingChart.destroy();
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dates, // X-Axis: Dates or VOD count
+            labels: dates,
             datasets: [{
                 label: 'Expected Days Remaining',
                 data: projectionData,
                 borderColor: '#58a6ff',
                 backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                borderWidth: 2,
+                pointRadius: 2,
                 fill: true,
-                tension: 0.4
+                tension: 0.3
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
-                    title: { display: true, text: 'Days Remaining', color: '#8b949e' },
-                    grid: { color: '#30363d' }
+                    beginAtZero: false,
+                    title: { display: true, text: 'Est. Days Until Record', color: '#8b949e' },
+                    grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                    ticks: { color: '#8b949e' }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: {
+                        color: '#8b949e',
+                        maxRotation: 45,
+                        minRotation: 45,
+                        autoSkip: true,
+                        maxTicksLimit: 15
+                    }
                 }
+            },
+            plugins: {
+                legend: { labels: { color: '#8b949e' } }
             }
         }
     });
