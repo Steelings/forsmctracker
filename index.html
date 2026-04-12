@@ -88,6 +88,32 @@
             <div class="pie-wrapper">
                 <canvas id="death-pie-chart"></canvas>
             </div>
+
+            <div class="stat-card insights-card" style="grid-column: span 3; text-align: left;">
+            <h3 style="text-align: center; margin-bottom: 20px;">Global Insights</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                
+                <div style="background: #21262d; padding: 15px; border-radius: 8px; border: 1px solid #30363d; text-align: center;">
+                    <span style="font-size: 0.75rem; color: #8b949e; text-transform: uppercase;">Total Runs</span>
+                    <strong style="display: block; font-size: 1.6rem; color: #58a6ff; margin-top: 5px;" id="insight-total-runs">-</strong>
+                </div>
+                
+                <div style="background: #21262d; padding: 15px; border-radius: 8px; border: 1px solid #30363d; text-align: center;">
+                    <span style="font-size: 0.75rem; color: #8b949e; text-transform: uppercase;">Total Playtime</span>
+                    <strong style="display: block; font-size: 1.6rem; color: #f0f6fc; margin-top: 5px;" id="insight-playtime">-</strong>
+                </div>
+                
+                <div style="background: #21262d; padding: 15px; border-radius: 8px; border: 1px solid #30363d; text-align: center;">
+                    <span style="font-size: 0.75rem; color: #8b949e; text-transform: uppercase;">Nether Rate</span>
+                    <strong style="display: block; font-size: 1.6rem; color: #55ee55; margin-top: 5px;" id="insight-nether-rate">-</strong>
+                </div>
+                
+                <div style="background: #21262d; padding: 15px; border-radius: 8px; border: 1px solid #30363d; text-align: center;">
+                    <span style="font-size: 0.75rem; color: #8b949e; text-transform: uppercase;">Avg. Run Time</span>
+                    <strong style="display: block; font-size: 1.6rem; color: #ee5555; margin-top: 5px;" id="insight-avg-length">-</strong>
+                </div>
+                
+            </div>
         </div>
     </div>
 
@@ -130,6 +156,7 @@
     </div>
 
     <script type="module">
+        import { seconds } from "./js/helpers/utils.js";
         import vodRuns from "./data/stripped_runs.json" with { type: "json" };
         import { buildDailySummary, buildDeathPieChart } from "./js/summary.js";
         import { buildAvgEntryChart } from "./js/graphs.js";
@@ -150,6 +177,36 @@
                 if (dateSpan) {
                     dateSpan.textContent = runs[0].date;
                 }
+            }
+
+            if (runs.length > 0) {
+                let totalSecs = 0;
+                let netherCount = 0;
+                
+                runs.forEach(r => {
+                    if (r.runTime) totalSecs += seconds(r.runTime);
+                    if (r.nether) netherCount++;
+                });
+
+                // Math for total playtime
+                const hours = Math.floor(totalSecs / 3600);
+                const minutes = Math.floor((totalSecs % 3600) / 60);
+                
+                // Math for average run length
+                const avgSecs = Math.floor(totalSecs / runs.length);
+                const avgM = Math.floor(avgSecs / 60);
+                const avgS = avgSecs % 60;
+
+                // Push to UI
+                const elTotal = document.getElementById('insight-total-runs');
+                const elPlaytime = document.getElementById('insight-playtime');
+                const elNether = document.getElementById('insight-nether-rate');
+                const elAvg = document.getElementById('insight-avg-length');
+
+                if (elTotal) elTotal.textContent = runs.length.toLocaleString();
+                if (elPlaytime) elPlaytime.textContent = `${hours}h ${minutes}m`;
+                if (elNether) elNether.textContent = ((netherCount / runs.length) * 100).toFixed(1) + '%';
+                if (elAvg) elAvg.textContent = `${avgM}m ${avgS.toString().padStart(2, '0')}s`;
             }
 
             buildDailySummary(runs);
