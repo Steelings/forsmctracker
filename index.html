@@ -238,28 +238,39 @@
                 let lateThrows = 0;
                 let unluckyCount = 0;
 
-                // Best Run Tracker
+                // Run Trackers for Links
                 let bestRun = null;
                 let bestScore = -1;
+                let fastestNetherRun = null;
+                let longestRun = null;
                 
                 runs.forEach(r => {
                     const rSecs = r.runTime ? seconds(r.runTime) : 0;
                     totalSecs += rSecs;
                     
                     if (r.date) uniqueDays.add(r.date);
-                    if (rSecs > maxRunSecs) maxRunSecs = rSecs;
+                    
+                    // Track Longest Run Data
+                    if (rSecs > maxRunSecs) {
+                        maxRunSecs = rSecs;
+                        longestRun = r;
+                    }
 
                     if (r.nether) {
                         netherCount++;
-                        if (r.nether < fastestNether) fastestNether = r.nether;
-                        // God Seed Wasted: Nether under 3m, but didn't reach stronghold
+                        // Track Fastest Nether Data
+                        if (r.nether < fastestNether) {
+                            fastestNether = r.nether;
+                            fastestNetherRun = r;
+                        }
+                        // God Seed Wasted
                         if (r.nether < 180 && !r.stronghold) godSeedsWasted++;
                     }
 
-                    // Late Game Throw: Reached stronghold or end, but has a death registered
+                    // Late Game Throw
                     if ((r.stronghold || r.end) && r.death) lateThrows++;
 
-                    // Unlucky: Lava, Fall damage, Fire
+                    // Unlucky
                     if (r.death) {
                         const d = r.death.toLowerCase();
                         if (d.includes('lava') || d.includes('fell') || d.includes('fire') || d.includes('gravity') || d.includes('ground')) {
@@ -288,25 +299,27 @@
                     return `${m}m ${sec.toString().padStart(2, '0')}s`;
                 };
 
-                const hours = Math.floor(totalSecs / 3600);
-                const minutes = Math.floor((totalSecs % 3600) / 60);
-                const avgSecs = Math.floor(totalSecs / runs.length);
-
-                // --- Best VOD Link Generator ---
-                let bestHTML = "-";
-                if (bestRun && bestRun.vod) {
+                // Link Generator Helper
+                // linkToEnd: false = links to start of run | true = links to death/reset (-5s)
+                const createVODLink = (run, text, linkToEnd = false, color = "#58a6ff") => {
+                    if (!run || !run.vod) return text;
                     let tStr = "0h0m0s";
-                    if (bestRun.timestamps && bestRun.timestamps.length > 0) {
-                        const parts = bestRun.timestamps[0].split(':').map(Number);
+                    if (run.timestamps && run.timestamps.length > 0) {
+                        const stampIndex = linkToEnd ? run.timestamps.length - 1 : 0;
+                        const parts = run.timestamps[stampIndex].split(':').map(Number);
                         let totalS = parts.length === 3 ? (parts[0]*3600 + parts[1]*60 + parts[2]) : (parts[0]*60 + parts[1]);
-                        totalS = Math.max(0, totalS - 5); // 5 sec buffer
+                        totalS = Math.max(0, totalS - 5);
                         const h = Math.floor(totalS / 3600);
                         const m = Math.floor((totalS % 3600) / 60);
                         tStr = h > 0 ? `${h}h${m}m${totalS % 60}s` : `${m}m${totalS % 60}s`;
                     }
-                    // Creates a clickable neon green link
-                    bestHTML = `<a href="${bestRun.vod}?t=${tStr}" target="_blank" style="color: #55ee55; text-decoration: none; text-shadow: 0 0 8px rgba(85,238,85,0.4);">${bestRun.date} ↗</a>`;
-                }
+                    const shadow = color === "#55ee55" ? "text-shadow: 0 0 8px rgba(85,238,85,0.4);" : "";
+                    return `<a href="${run.vod}?t=${tStr}" target="_blank" style="color: ${color}; text-decoration: none; ${shadow}">${text} ↗</a>`;
+                };
+
+                const hours = Math.floor(totalSecs / 3600);
+                const minutes = Math.floor((totalSecs % 3600) / 60);
+                const avgSecs = Math.floor(totalSecs / runs.length);
 
                 // --- Push Everything to the UI ---
                 document.getElementById('insight-total-runs').textContent = runs.length.toLocaleString();
@@ -314,15 +327,19 @@
                 document.getElementById('insight-nether-rate').textContent = ((netherCount / runs.length) * 100).toFixed(1) + '%';
                 document.getElementById('insight-avg-length').textContent = formatTime(avgSecs);
                 
-                document.getElementById('insight-fast-nether').textContent = formatTime(fastestNether);
+                // Inject the standard stats with their new clickable VOD links!
+                document.getElementById('insight-fast-nether').innerHTML = createVODLink(fastestNetherRun, formatTime(fastestNether), false, "#ffaa00");
+                document.getElementById('insight-longest-run').innerHTML = createVODLink(longestRun, formatTime(maxRunSecs), true, "#8b949e");
+                
                 document.getElementById('insight-nether-hour').textContent = (netherCount / (totalSecs / 3600)).toFixed(1);
                 document.getElementById('insight-runs-stream').textContent = Math.round(runs.length / Math.max(1, uniqueDays.size));
-                document.getElementById('insight-longest-run').textContent = formatTime(maxRunSecs);
                 
                 document.getElementById('insight-god-wasted').textContent = godSeedsWasted;
                 document.getElementById('insight-late-throws').textContent = lateThrows;
                 document.getElementById('insight-unlucky').textContent = unluckyCount;
-                document.getElementById('insight-best-vod').innerHTML = bestHTML;
+                
+                // Best VOD gets the special neon green link
+                document.getElementById('insight-best-vod').innerHTML = createVODLink(bestRun, bestRun ? bestRun.date : "-", false, "#55ee55");
             }
 
             buildDailySummary(runs);
