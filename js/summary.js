@@ -184,7 +184,7 @@ export function buildProjectionChart(runsByDay) {
     
     // CALIBRATION: To hit June 2026, the math needs to expect roughly 
     // 15,000 to 20,000 total runs based on his current daily volume.
-    const TARGET_TOTAL_RUNS = 18000; 
+    const TARGET_TOTAL_RUNS = 23000; 
 
     let cumulativeRuns = 0;
     const projectionData = dates.map((date, index) => {
