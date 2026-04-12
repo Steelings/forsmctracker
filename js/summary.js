@@ -182,24 +182,27 @@ export function buildProjectionChart(runsByDay) {
 
     const dates = Object.keys(runsByDay).sort((a, b) => new Date(a) - new Date(b));
     
-    const TOTAL_ESTIMATED_RUNS_NEEDED = 5000; 
+    // Increase the target so he hasn't "finished" yet
+    const TOTAL_ESTIMATED_RUNS_NEEDED = 8000; 
     
     let cumulativeRuns = 0;
     const projectionData = dates.map((date, index) => {
-        cumulativeRuns += runsByDay[date].length;
+        const runsToday = runsByDay[date].length;
+        cumulativeRuns += runsToday;
         
         const streamsSoFar = index + 1;
         const avgRunsPerStream = cumulativeRuns / streamsSoFar;
- 
+        
         const remainingRuns = Math.max(0, TOTAL_ESTIMATED_RUNS_NEEDED - cumulativeRuns);
         
-        let expectedDays = remainingRuns / avgRunsPerStream;
+        // Safety check: If avgRunsPerStream is 0, we avoid infinity
+        let expectedDays = avgRunsPerStream > 0 ? (remainingRuns / avgRunsPerStream) : 100;
 
-        
-        if (expectedDays <= 0) expectedDays = 0.5; 
-
-        return expectedDays.toFixed(1);
+        // GUARDRAIL: Cap the chart at 200 days so it doesn't break the UI
+        // And ensure it stays above 0.1 so it doesn't look like he's finished
+        return Math.min(200, Math.max(0.1, expectedDays)).toFixed(1);
     });
+
     const existingChart = Chart.getChart("projection-chart");
     if (existingChart) existingChart.destroy();
 
@@ -213,7 +216,7 @@ export function buildProjectionChart(runsByDay) {
                 borderColor: '#58a6ff',
                 backgroundColor: 'rgba(88, 166, 255, 0.1)',
                 borderWidth: 2,
-                pointRadius: 2,
+                pointRadius: 0, // Set to 0 to make the line look cleaner
                 fill: true,
                 tension: 0.3
             }]
@@ -223,24 +226,22 @@ export function buildProjectionChart(runsByDay) {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: false,
-                    title: { display: true, text: 'Est. Days Until Record', color: '#8b949e' },
-                    grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                    beginAtZero: true,
+                    max: 150, // This keeps the Y-axis from going to infinity
+                    title: { display: true, text: 'Days Until Record', color: '#8b949e' },
+                    grid: { color: 'rgba(48, 54, 61, 0.3)' },
                     ticks: { color: '#8b949e' }
                 },
                 x: {
                     grid: { display: false },
                     ticks: {
                         color: '#8b949e',
-                        maxRotation: 45,
-                        minRotation: 45,
-                        autoSkip: true,
-                        maxTicksLimit: 15
+                        maxTicksLimit: 10
                     }
                 }
             },
             plugins: {
-                legend: { labels: { color: '#8b949e' } }
+                legend: { display: false } // Hide legend to save space
             }
         }
     });
