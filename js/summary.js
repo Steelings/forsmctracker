@@ -222,27 +222,32 @@ export function buildProjectionChart(runsByDay) {
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 150, // This keeps the Y-axis from going to infinity
-                    title: { display: true, text: 'Days Until Record', color: '#8b949e' },
-                    grid: { color: 'rgba(48, 54, 61, 0.3)' },
-                    ticks: { color: '#8b949e' }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: {
-                        color: '#8b949e',
-                        maxTicksLimit: 10
-                    }
-                }
-            },
-            plugins: {
-                legend: { display: false } // Hide legend to save space
+    responsive: true,
+    maintainAspectRatio: false, 
+    layout: {
+        padding: {
+            bottom: 10
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            max: 150, 
+            title: { display: true, text: 'Days Remaining', color: '#8b949e' },
+            grid: { color: 'rgba(48, 54, 61, 0.3)' },
+            ticks: { color: '#8b949e' }
+        },
+        x: {
+            grid: { display: false },
+            ticks: {
+                color: '#8b949e',
+                maxTicksLimit: 8
             }
         }
+    },
+    plugins: {
+        legend: { display: false }
+    }
+}
     });
 }
