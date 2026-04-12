@@ -174,3 +174,54 @@ export function buildDeathPieChart(runs) {
         }
     });
 }
+
+export function buildProjectionChart(runsByDay) {
+    const ctx = document.getElementById('projection-chart');
+    if (!ctx) return;
+
+    // 1. Get the dates in order
+    const dates = Object.keys(runsByDay).sort((a, b) => new Date(a) - new Date(b));
+    
+    // 2. We need a "Rolling Average" of his performance
+    // Let's assume the record requires ~1,000 runs on average (standard Minecraft luck)
+    const AVG_RUNS_TO_RECORD = 1000; 
+    
+    let cumulativeRuns = 0;
+    const projectionData = dates.map((date) => {
+        cumulativeRuns += runsByDay[date].length;
+        
+        // Expected Days = (Remaining Runs needed) / (Avg Runs per Stream)
+        const avgRunsPerStream = cumulativeRuns / (dates.indexOf(date) + 1);
+        const remainingRuns = Math.max(0, AVG_RUNS_TO_RECORD - cumulativeRuns);
+        const expectedDays = remainingRuns / avgRunsPerStream;
+
+        return expectedDays.toFixed(1);
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates, // X-Axis: Dates or VOD count
+            datasets: [{
+                label: 'Expected Days Remaining',
+                data: projectionData,
+                borderColor: '#58a6ff',
+                backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: { display: true, text: 'Days Remaining', color: '#8b949e' },
+                    grid: { color: '#30363d' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
