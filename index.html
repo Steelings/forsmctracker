@@ -370,5 +370,33 @@
             document.getElementById('download-background').style.display = show ? 'flex' : 'none';
         }
     </script>
+
+    <script>
+    // Fetch live odds directly from Polymarket's public Gamma API
+    fetch("https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by")
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                // Find the active market inside the event
+                const market = data[0].markets.find(m => m.active);
+                
+                if (market && market.outcomePrices) {
+                    // Prices come as a string array, e.g., '["0.15", "0.85"]' (Yes, No)
+                    const prices = JSON.parse(market.outcomePrices);
+                    const yesPrice = parseFloat(prices[0]);
+                    const yesPercentage = Math.round(yesPrice * 100);
+                    
+                    // Update the HTML
+                    document.getElementById("poly-odds").innerText = yesPercentage + "% YES";
+                } else {
+                    document.getElementById("poly-odds").innerText = "Market Closed";
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching Polymarket odds:", error);
+            document.getElementById("poly-odds").innerText = "Odds Unavailable";
+        });
+</script>
 </body>
 </html>
