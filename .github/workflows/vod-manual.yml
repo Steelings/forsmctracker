@@ -14,30 +14,18 @@ jobs:
       fail-fast: false
       matrix:
         vod:
-          - date: "Mar 26"
-            url: "https://www.twitch.tv/videos/2732224019"
-            time: "01:05:00"
-          - date: "Mar 28"
-            url: "https://www.twitch.tv/videos/2734758017"
-            time: "01:02:00"
-          - date: "Mar 30"
-            url: "https://www.twitch.tv/videos/2735573154"
-            time: "01:17:30"
-          - date: "Apr 1"
-            url: "https://www.twitch.tv/videos/2737195524"
-            time: "01:03:00"
-          - date: "Apr 4"
-            url: "https://www.twitch.tv/videos/2739738173"
-            time: "01:25:34"
-          - date: "Apr 5"
+          - date: "Apr 05"
             url: "https://www.twitch.tv/videos/2740586888"
             time: "01:33:00"
-          - date: "Apr 7"
+          - date: "Apr 07"
             url: "https://www.twitch.tv/videos/2742175820"
             time: "01:08:00"
-          - date: "Apr 9"
+          - date: "Apr 09"
             url: "https://www.twitch.tv/videos/2743769025"
             time: "01:00:00"
+          - date: "Apr 11"
+            url: "https://www.twitch.tv/videos/2745435110"
+            time: "01:07:00"
 
     steps:
       - name: Checkout latest code
