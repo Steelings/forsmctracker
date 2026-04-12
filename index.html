@@ -375,22 +375,28 @@
         }
     </script>
 
-    <script>
-    // Fetch live odds directly from Polymarket's public Gamma API
-    fetch("https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by")
-        .then(response => response.json())
+   <script>
+    // We wrap the Polymarket API URL inside a CORS proxy to bypass the browser block
+    const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by";
+    const proxyUrl = "https://corsproxy.io/?url=";
+
+    fetch(proxyUrl + encodeURIComponent(targetUrl))
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
         .then(data => {
             if (data && data.length > 0) {
-                // Find the active market inside the event
-                const market = data[0].markets.find(m => m.active);
+                // Find the active market
+                const event = data[0];
+                const market = event.markets.find(m => m.active === true) || event.markets[0];
                 
                 if (market && market.outcomePrices) {
-                    // Prices come as a string array, e.g., '["0.15", "0.85"]' (Yes, No)
+                    // Prices are often stringified JSON in the Gamma API
                     const prices = JSON.parse(market.outcomePrices);
-                    const yesPrice = parseFloat(prices[0]);
+                    const yesPrice = parseFloat(prices[0]); // Index 0 is usually 'Yes'
                     const yesPercentage = Math.round(yesPrice * 100);
                     
-                    // Update the HTML
                     document.getElementById("poly-odds").innerText = yesPercentage + "% YES";
                 } else {
                     document.getElementById("poly-odds").innerText = "Market Closed";
@@ -398,7 +404,7 @@
             }
         })
         .catch(error => {
-            console.error("Error fetching Polymarket odds:", error);
+            console.error("Polymarket Fetch Error:", error);
             document.getElementById("poly-odds").innerText = "Odds Unavailable";
         });
 </script>
