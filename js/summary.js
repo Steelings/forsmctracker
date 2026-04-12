@@ -29,6 +29,24 @@ export function buildDailySummary(runs) {
     updateCard('val-strong-qty', 'val-strong-avg', splits[5]);
     updateCard('val-end-qty', 'val-end-avg', splits[6]);
 
+    // --- NEW: Calculate Resets Per Nether for the Insights Card ---
+    const totalRuns = runs.length;
+    // Safely grab all the nether times we just used for the cards above
+    const netherTimes = splits[1] ? Object.values(splits[1]).flat() : [];
+    const totalNethers = netherTimes.length;
+
+    let resetsPerNether = 0;
+    if (totalNethers > 0) {
+        resetsPerNether = totalRuns / totalNethers;
+    }
+
+    const resetsEl = document.getElementById("insight-resets-per-nether");
+    if (resetsEl) {
+        // Puts the number in the HTML, rounded to 1 decimal place (e.g., 24.5)
+        resetsEl.textContent = resetsPerNether > 0 ? resetsPerNether.toFixed(1) : "0";
+    }
+    // --------------------------------------------------------------
+
     // Setup for Run History List
     const runlist = new Runlist(document.getElementById("summary-runs"), []);
     const runsByDay = {};
