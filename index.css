@@ -26,9 +26,74 @@ body {
 /* --- HERO & NEON --- */
 .prediction-hero {
     background: radial-gradient(circle at center, #1c2128 0%, #0d1117 100%);
-    padding: 80px 20px;
+    padding: 60px 20px 80px 20px;
     text-align: center;
     border-bottom: 1px solid #30363d;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- TWITCH LIVE STATUS BADGE --- */
+.twitch-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 30px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+/* Offline state */
+.badge-offline {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #8b949e;
+}
+
+/* Live Minecraft state */
+.badge-live-mc {
+    background: rgba(85, 238, 85, 0.1);
+    border: 1px solid #55ee55;
+    color: #55ee55;
+    box-shadow: 0 0 15px rgba(85, 238, 85, 0.15);
+    cursor: pointer;
+}
+.badge-live-mc:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(85, 238, 85, 0.3);
+}
+
+/* Live Other Game state */
+.badge-live-other {
+    background: rgba(238, 85, 85, 0.1);
+    border: 1px solid #ee5555;
+    color: #ee5555;
+    box-shadow: 0 0 15px rgba(238, 85, 85, 0.15);
+    cursor: pointer;
+}
+.badge-live-other:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(238, 85, 85, 0.3);
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    animation: pulse-animation 1.5s infinite alternate;
+}
+
+@keyframes pulse-animation {
+    from { opacity: 0.4; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1.3); }
 }
 
 .neon-glow {
@@ -60,24 +125,6 @@ body {
     text-shadow: 0 0 8px rgba(238, 85, 85, 0.4);
 }
 
-@keyframes neon-pulse {
-    from {
-        text-shadow: 
-            0 0 2px #ffffff,
-            0 0 5px #ffffff,
-            0 0 12px #58a6ff,
-            0 0 22px #58a6ff,
-            0 0 50px #005cc5;
-    }
-    to {
-        text-shadow: 
-            0 0 4px #ffffff,
-            0 0 10px #ffffff,
-            0 0 18px #58a6ff,
-            0 0 38px #58a6ff,
-            0 0 73px #005cc5;
-    }
-}
 .prediction-stats {
     display: flex;
     justify-content: center;
@@ -142,86 +189,6 @@ body {
 .dataset-btn:hover { background: #30363d; }
 
 
-/* --- MOBILE RESPONSIVENESS (Screens under 768px) --- */
-@media (max-width: 768px) {
-    
-    .navbar { flex-direction: column; padding: 15px; gap: 15px; text-align: center; }
-
-
-    .neon-glow { font-size: 2.2rem; }
-    .prediction-hero { padding: 40px 15px; }
-    .prediction-stats { flex-direction: column; gap: 15px; }
-
-  
-    .dashboard-grid { padding: 15px; gap: 15px; }
-    .card { margin: 20px 10px; padding: 15px; }
-
-
-    .pie-card, .insights-card, .stat-card[style*="span 3"] { grid-column: 1 / -1 !important; }
-
-
-    .insights-card > div { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important; }
-
-    .modal-content { width: 90%; max-width: 400px; }
-    .stat-card[style*="max-width: 400px"] { margin: 20px 15px !important; }
-
-    /* Mobile tables shouldn't squish; they should allow swiping left/right */
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    }
-    .modern-table {
-        min-width: 500px; /* Forces the table to stay wide so it's readable */
-    }
-
-    .card > div[style*="justify-content: space-between"] {
-        flex-direction: column !important;
-        align-items: stretch !important; /* Stretches the dropdown to full width */
-        gap: 15px;
-    }
-    
-
-   .card > div[style*="justify-content: space-between"] {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 15px;
-    }
-
-    
-    select {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        margin-bottom: 10px !important;
-    }
-
-    #summary-runs {
-        width: 100%;
-        overflow-x: hidden; /* Disable horizontal scrolling entirely */
-    }
-
-    #summary-runs > div:first-child {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 10px !important;
-    }
-
-   
-    #summary-runs > div {
-        font-size: 0.75rem !important; 
-        padding-left: 0 !important; 
-        padding-right: 0 !important;
-        gap: 5px !important; 
-    }
-
-
-    #summary-runs img {
-        width: 20px !important;
-        height: 20px !important;
-    }
-}
-
 /* --- VOD LINK UI --- */
 .vod-link {
     display: inline-flex;
@@ -240,4 +207,70 @@ body {
 
 .vod-link:active {
     transform: scale(0.95);
+}
+
+/* --- MOBILE RESPONSIVENESS (Screens under 768px) --- */
+@media (max-width: 768px) {
+    
+    .navbar { flex-direction: column; padding: 15px; gap: 15px; text-align: center; }
+
+    .neon-glow { font-size: 2.2rem; }
+    .prediction-hero { padding: 40px 15px; }
+    .prediction-stats { flex-direction: column; gap: 15px; }
+  
+    .dashboard-grid { padding: 15px; gap: 15px; }
+    .card { margin: 20px 10px; padding: 15px; }
+
+    .pie-card, .insights-card, .stat-card[style*="span 3"] { grid-column: 1 / -1 !important; }
+
+    .insights-card > div { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important; }
+
+    .modal-content { width: 90%; max-width: 400px; }
+    .stat-card[style*="max-width: 400px"] { margin: 20px 15px !important; }
+
+    /* Mobile tables shouldn't squish; they should allow swiping left/right */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+    .modern-table {
+        min-width: 500px; /* Forces the table to stay wide so it's readable */
+    }
+
+    .card > div[style*="justify-content: space-between"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 15px;
+    }
+    
+    select {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 10px !important;
+    }
+
+    #summary-runs {
+        width: 100%;
+        overflow-x: hidden; /* Disable horizontal scrolling entirely */
+    }
+
+    #summary-runs > div:first-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+   
+    #summary-runs > div {
+        font-size: 0.75rem !important; 
+        padding-left: 0 !important; 
+        padding-right: 0 !important;
+        gap: 5px !important; 
+    }
+
+    #summary-runs img {
+        width: 20px !important;
+        height: 20px !important;
+    }
 }
