@@ -196,11 +196,22 @@
                     <span class="insight-title">Longest Suffering</span>
                     <strong class="insight-value" style="color: #8b949e;" id="insight-longest-run">-</strong>
                 </div>
-                <div class="insight-box best-vod">
-                    <span class="insight-title">Best VOD Day</span>
-                    <strong class="insight-value" id="insight-best-vod">-</strong>
+                
+                <div class="insight-box">
+                    <span class="insight-title" title="Polymarket Odds: Will Forsen beat xQc by April 30?">
+                        Apr 30 Odds
+                        <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by" target="_blank" style="color: #58a6ff; text-decoration: none; margin-left: 3px;">↗</a>
+                    </span>
+                    <strong class="insight-value" id="poly-odds" style="color: #8b949e;">...</strong>
                 </div>
 
+            </div>
+        </div>
+
+        <div class="stat-card insights-card best-vod" style="grid-column: span 3; border-color: #55ee55; padding: 15px;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+                <span style="font-size: 0.8rem; color: #55ee55; text-transform: uppercase; font-weight: bold;">Best VOD Day:</span>
+                <strong style="font-size: 1.2rem;" id="insight-best-vod">-</strong>
             </div>
         </div>
 
@@ -210,15 +221,6 @@
                 <canvas id="projection-chart"></canvas>
             </div>
         </div>
-    </div>
-
-    <div class="stat-card"
-        style="border: 1px solid #333; padding: 15px; border-radius: 8px; background-color: #1e1e1e; text-align: center; margin: 20px auto; max-width: 400px;">
-        <h3 style="margin-top: 0; color: #888; font-size: 14px;">Polymarket Odds</h3>
-        <p style="font-size: 14px; margin-bottom: 10px;">Will Forsen beat xQc by April 30?</p>
-        <h2 id="poly-odds" style="color: #4ade80; font-size: 32px; margin: 10px 0;">Loading...</h2>
-        <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by" target="_blank"
-            style="color: #3b82f6; text-decoration: none; font-size: 12px;">View Market ↗</a>
     </div>
 
     <section class="card centered-section">
@@ -387,6 +389,8 @@
                 document.getElementById('insight-late-throws').textContent = lateThrows.toLocaleString();
                 document.getElementById('insight-fast-nether').innerHTML = createVODLink(fastestNetherRun, formatTime(fastestNether), false, "#ffaa00");
                 document.getElementById('insight-longest-run').innerHTML = createVODLink(longestRun, formatTime(maxRunSecs), true, "#8b949e");
+                
+                // The Best VOD Day is now isolated in its own full-width block below the grid
                 document.getElementById('insight-best-vod').innerHTML = createVODLink(bestRun, bestRun ? bestRun.date : "-", false, "#55ee55");
             }
 
