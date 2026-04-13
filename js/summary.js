@@ -182,27 +182,48 @@ export function buildProjectionChart(runsByDay) {
 
     const dates = Object.keys(runsByDay).sort((a, b) => new Date(a) - new Date(b));
     
-    // CALIBRATION: To hit June 2026, the math needs to expect roughly 
-    // 15,000 to 20,000 total runs based on his current daily volume.
-    const TARGET_TOTAL_RUNS = 23000; 
-
     let cumulativeRuns = 0;
+    let cumulativePaceRuns = 0;
+    const CONVERSION_RATE = 0.025; // 2.5% conversion
+    const PACE_CUTOFF = 600; // 10 minutes
+
     const projectionData = dates.map((date, index) => {
-        cumulativeRuns += runsByDay[date].length;
+        const dayRuns = runsByDay[date];
+        cumulativeRuns += dayRuns.length;
         
+        // Count how many runs were actually on pace today and add to cumulative
+        dayRuns.forEach(run => {
+            const s2 = run.bastion && run.fort ? Math.max(run.bastion, run.fort) : null;
+            if (s2 !== null && run.blind && run.blind <= PACE_CUTOFF) {
+                cumulativePaceRuns++;
+            }
+        });
+
         const streamsSoFar = index + 1;
         const runsPerStream = cumulativeRuns / streamsSoFar;
 
-        // Instead of hitting 0, we calculate how many days it takes 
-        // to reach the 18,000 run milestone at his CURRENT pace.
-        const remainingRuns = Math.max(500, TARGET_TOTAL_RUNS - cumulativeRuns);
-        const daysRemaining = remainingRuns / runsPerStream;
+        // Apply the same probability math from the main predictor
+        const pRecordPace = cumulativeRuns > 0 ? (cumulativePaceRuns / cumulativeRuns) : 0;
+        const pRec = pRecordPace * CONVERSION_RATE;
+
+        // Calculate expected days (d50) using the log probability formula
+        let d50 = 1500; // Default cap to prevent chart from breaking early on
+        if (pRec > 0) {
+            d50 = Math.log(0.5) / (runsPerStream * Math.log(1 - pRec));
+            d50 = Math.min(d50, 1500); // Cap the visual spike for the first few bad days
+        }
+
+        // Calculate the actual calendar date for the tooltip
+        const expectedDate = new Date();
+        expectedDate.setDate(expectedDate.getDate() + d50);
+        const dateStr = expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
         return {
             x: date,
-            y: parseFloat(daysRemaining.toFixed(1)),
+            y: parseFloat(d50.toFixed(1)),
             totalRuns: cumulativeRuns,
-            pace: runsPerStream.toFixed(1)
+            pace: runsPerStream.toFixed(1),
+            estDate: dateStr // Pass the formatted date to the tooltip
         };
     });
 
@@ -231,7 +252,6 @@ export function buildProjectionChart(runsByDay) {
             interaction: { mode: 'index', intersect: false },
             scales: {
                 y: {
-                    // We set the min to something realistic so it doesn't look like 0
                     min: 0,
                     title: { display: true, text: 'Expected Days Remaining', color: '#8b949e' },
                     grid: { color: 'rgba(48, 54, 61, 0.3)' },
@@ -251,7 +271,8 @@ export function buildProjectionChart(runsByDay) {
                         label: (context) => {
                             const d = context.raw;
                             return [
-                                ` Est. Days Left: ${d.y}`,
+                                ` Est. Date: ${d.estDate}`,
+                                ` Days Left: ${d.y}`,
                                 ` Total Runs: ${d.totalRuns}`,
                                 ` Pace: ${d.pace} runs/stream`
                             ];
