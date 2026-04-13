@@ -384,7 +384,7 @@
 
             try {
                 // FIRST: Check if he is actually live using the uptime endpoint
-                const uptimeRes = await fetch('https://decapi.me/twitch/uptime/forsen');
+                const uptimeRes = await fetch('https://decapi.me/twitch/uptime/nofearr1337');
                 const uptimeText = await uptimeRes.text();
 
                 if (uptimeText.toLowerCase().includes('offline')) {
@@ -397,11 +397,11 @@
                     `;
                 } else {
                     // State 2: LIVE - Now fetch the game he is playing
-                    const gameRes = await fetch('https://decapi.me/twitch/game/forsen');
+                    const gameRes = await fetch('https://decapi.me/twitch/game/nofearr1337');
                     const gameText = await gameRes.text();
                     const isMinecraft = gameText.toLowerCase().includes('minecraft');
                     
-                    badge.href = "https://twitch.tv/forsen";
+                    badge.href = "https://twitch.tv/nofearr1337";
                     badge.target = "_blank";
                     
                     if (isMinecraft) {
