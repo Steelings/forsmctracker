@@ -155,4 +155,333 @@
                     <strong class="insight-value" style="color: #d2a8ff;" id="insight-runs-stream">-</strong>
                 </div>
                 <div class="insight-box">
-                    <span class="insight-title" title="Average duration of a stream">Avg MC time
+                    <span class="insight-title" title="Average duration of a stream">Avg MC time/stream </span>
+                    <strong class="insight-value" style="color: #d2a8ff;" id="insight-avg-stream-length">-</strong>
+                </div>
+
+                <div class="insight-box">
+                    <span class="insight-title">Nether Rate</span>
+                    <strong class="insight-value" style="color: #55ee55;" id="insight-nether-rate">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title">Nethers / Hour</span>
+                    <strong class="insight-value" style="color: #58a6ff;" id="insight-nether-hour">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title" title="Average number of resets it takes to get one nether entry">Resets / Nether</span>
+                    <strong class="insight-value" style="color: #ff7b72;" id="insight-resets-per-nether">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title" title="Average time to enter the Nether (for successful entries)">Avg Nether Entry</span>
+                    <strong class="insight-value" style="color: #ffaa00;" id="insight-avg-nether-entry">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title" title="Entered nether under 3 mins, but died before Stronghold">God Seeds Wasted</span>
+                    <strong class="insight-value" style="color: #ee5555;" id="insight-god-wasted">-</strong>
+                </div>
+
+                <div class="insight-box">
+                    <span class="insight-title" title="Deaths to Lava, Fire, or Gravity">"Unlucky" deaths</span>
+                    <strong class="insight-value" style="color: #fa4549;" id="insight-unlucky">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title" title="Died in Stronghold or End">Late Throws</span>
+                    <strong class="insight-value" style="color: #ff58db;" id="insight-late-throws">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title">Fastest Nether</span>
+                    <strong class="insight-value" style="color: #ffaa00;" id="insight-fast-nether">-</strong>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-title">Longest Suffering</span>
+                    <strong class="insight-value" style="color: #8b949e;" id="insight-longest-run">-</strong>
+                </div>
+                <div class="insight-box best-vod">
+                    <span class="insight-title">Best VOD Day</span>
+                    <strong class="insight-value" id="insight-best-vod">-</strong>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="stat-card" style="grid-column: span 3; height: 400px; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+            <h3 style="text-align: center; color: #8b949e; margin-bottom: 10px;">Projected Timeline to Record</h3>
+            <div style="flex-grow: 1; width: 100%;">
+                <canvas id="projection-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="stat-card" style="grid-column: span 2; height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h3 style="margin-top: 0; color: #8b949e; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase;">Polymarket Odds</h3>
+            <p style="font-size: 0.95rem; margin-bottom: 15px; color: #c9d1d9; text-align: center; max-width: 80%;">Will Forsen beat xQc by April 30?</p>
+            <h2 id="poly-odds" style="color: #4ade80; font-size: 3.5rem; margin: 10px 0; text-shadow: 0 0 15px rgba(74, 222, 128, 0.2);">...</h2>
+            <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by" target="_blank" style="color: #58a6ff; text-decoration: none; font-size: 0.9rem; margin-top: 20px;">
+                View Market ↗
+            </a>
+        </div>
+    </div>
+
+    <section class="card centered-section">
+        <h2>Detailed Split Odds</h2>
+        <p style="color: #8b949e; font-size: 0.9rem; margin-bottom: 20px; padding: 0 20px;">
+            Tracking the survival rate of the runs. This shows exactly how many runs made it to each specific stage, and
+            the statistical chance of a run surviving that far.
+        </p>
+        <div class="table-container">
+            <table class="modern-table">
+                <tbody id="odds-chance"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Pace Analytics: Daily Averages</h2>
+        <div class="chart-container" style="height: 400px; position: relative;">
+            <canvas class="avg-entry-chart"></canvas>
+        </div>
+    </section>
+
+    <section class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Recent Run History</h2>
+            <select id="summary-day"></select>
+        </div>
+        <div id="summary-runs"></div>
+    </section>
+
+    <div id="download-background" class="modal-overlay" style="display: none;">
+        <div class="modal-content card">
+            <h2>Available Datasets</h2>
+            <div class="modal-links" style="margin: 20px 0; display: flex; flex-direction: column; gap: 10px;">
+                <a href="./data/stripped_runs.json" download class="dataset-link">stripped_runs.json</a>
+                <a href="./data/live_stripped_runs.json" download class="dataset-link">live_stripped_runs.json</a>
+            </div>
+            <button class="dataset-btn" onclick="toggleModal(false)">Close</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { seconds } from "./js/helpers/utils.js";
+        import { buildDailySummary, buildDeathPieChart, buildProjectionChart } from "./js/summary.js";
+        import { buildAvgEntryChart } from "./js/graphs.js";
+        import { buildOdds, buildPredictions } from "./js/odds.js";
+        import { Runlist } from "./js/runlist.js";
+
+        async function init() {
+            let vodRuns = [];
+            let liveRuns = [];
+
+            const formatTime = (s) => {
+                if (s === Infinity || s === 0) return "-";
+                const m = Math.floor(s / 60);
+                const sec = Math.floor(s % 60);
+                return `${m}m ${sec.toString().padStart(2, '0')}s`;
+            };
+
+            const createVODLink = (run, text, linkToEnd = false, color = "#58a6ff") => {
+                if (!run || !run.vod) return text;
+                let tStr = "0h0m0s";
+                if (run.timestamps && run.timestamps.length > 0) {
+                    const stampIndex = linkToEnd ? run.timestamps.length - 1 : 0;
+                    const parts = run.timestamps[stampIndex].split(':').map(Number);
+                    let totalS = parts.length === 3 ? (parts[0] * 3600 + parts[1] * 60 + parts[2]) : (parts[0] * 60 + parts[1]);
+                    totalS = Math.max(0, totalS - 5);
+                    const h = Math.floor(totalS / 3600);
+                    const m = Math.floor((totalS % 3600) / 60);
+                    tStr = h > 0 ? `${h}h${m}m${totalS % 60}s` : `${m}m${totalS % 60}s`;
+                }
+                const shadow = color === "#55ee55" ? "text-shadow: 0 0 8px rgba(85,238,85,0.4);" : "";
+
+                return `<a href="${run.vod}?t=${tStr}" target="_blank" class="vod-link" title="Watch Twitch VOD starting at ${tStr}" style="color: ${color}; ${shadow}">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align: middle; margin-right: 4px;">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        ${text}
+    </a>`;
+            };
+
+            try {
+                const timestamp = new Date().getTime();
+                const vodResponse = await fetch(`./data/stripped_runs.json?t=${timestamp}`);
+                if (vodResponse.ok) vodRuns = await vodResponse.json();
+
+                const liveResponse = await fetch(`./data/live_stripped_runs.json?t=${timestamp}`);
+                if (liveResponse.ok) liveRuns = await liveResponse.json();
+            } catch (e) { console.log("Error loading data."); }
+
+            const runs = vodRuns.concat(liveRuns);
+
+            runs.sort((a, b) => {
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(a.date).getTime() - new Date(b.date).getTime();
+            });
+
+            const runsByDay = {};
+            runs.forEach(run => {
+                if (run.date) {
+                    if (!runsByDay[run.date]) runsByDay[run.date] = [];
+                    runsByDay[run.date].push(run);
+                }
+            });
+
+            if (runs.length > 0) {
+                document.getElementById("latest-vod-date").textContent = runs[runs.length - 1].date;
+
+                let totalSecs = 0, totalNetherSecs = 0, netherCount = 0, fastestNether = Infinity, maxRunSecs = 0;
+                let godSeedsWasted = 0, lateThrows = 0, unluckyCount = 0;
+                let bestRun = null, bestScore = -1, fastestNetherRun = null, longestRun = null;
+                let uniqueDays = new Set();
+
+                runs.forEach(r => {
+                    const rSecs = r.runTime ? seconds(r.runTime) : 0;
+                    totalSecs += rSecs;
+                    if (r.date) uniqueDays.add(r.date);
+                    if (rSecs > maxRunSecs) { maxRunSecs = rSecs; longestRun = r; }
+                    if (r.nether) {
+                        netherCount++;
+                        totalNetherSecs += r.nether; 
+                        if (r.nether < fastestNether) { fastestNether = r.nether; fastestNetherRun = r; }
+                        if (r.nether < 180 && !r.stronghold) godSeedsWasted++;
+                    }
+                    if ((r.stronghold || r.end) && r.death) lateThrows++;
+                    if (r.death) {
+                        const d = r.death.toLowerCase();
+                        if (d.includes('lava') || d.includes('fell') || d.includes('fire') || d.includes('gravity')) unluckyCount++;
+                    }
+                    let score = 0;
+                    if (r.end) score += 5000;
+                    if (r.stronghold) score += 1000;
+                    if (r.blind) score += 500;
+                    if (score > bestScore) { bestScore = score; bestRun = r; }
+                });
+
+                const avgNetherSecs = netherCount > 0 ? Math.floor(totalNetherSecs / netherCount) : 0;
+                const streamSecs = Math.floor(totalSecs / Math.max(1, uniqueDays.size));
+                const avgStreamH = Math.floor(streamSecs / 3600);
+                const avgStreamM = Math.floor((streamSecs % 3600) / 60);
+
+                // Row 1
+                document.getElementById('insight-total-runs').textContent = runs.length.toLocaleString();
+                document.getElementById('insight-playtime').textContent = `${Math.floor(totalSecs / 3600)}h ${Math.floor((totalSecs % 3600) / 60)}m`;
+                document.getElementById('insight-avg-length').textContent = formatTime(Math.floor(totalSecs / runs.length));
+                document.getElementById('insight-runs-stream').textContent = Math.round(runs.length / Math.max(1, uniqueDays.size));
+                document.getElementById('insight-avg-stream-length').textContent = `${avgStreamH}h ${avgStreamM.toString().padStart(2, '0')}m`;
+                
+                // Row 2
+                document.getElementById('insight-nether-rate').textContent = ((netherCount / runs.length) * 100).toFixed(1) + '%';
+                document.getElementById('insight-nether-hour').textContent = (netherCount / (totalSecs / 3600)).toFixed(1);
+                document.getElementById('insight-resets-per-nether').textContent = (runs.length / Math.max(1, netherCount)).toFixed(1);
+                document.getElementById('insight-avg-nether-entry').textContent = formatTime(avgNetherSecs);
+                document.getElementById('insight-god-wasted').textContent = godSeedsWasted.toLocaleString();
+
+                // Row 3
+                document.getElementById('insight-unlucky').textContent = unluckyCount.toLocaleString();
+                document.getElementById('insight-late-throws').textContent = lateThrows.toLocaleString();
+                document.getElementById('insight-fast-nether').innerHTML = createVODLink(fastestNetherRun, formatTime(fastestNether), false, "#ffaa00");
+                document.getElementById('insight-longest-run').innerHTML = createVODLink(longestRun, formatTime(maxRunSecs), true, "#8b949e");
+                document.getElementById('insight-best-vod').innerHTML = createVODLink(bestRun, bestRun ? bestRun.date : "-", false, "#55ee55");
+            }
+
+            buildDailySummary(runs);
+            buildPredictions(runs);
+            buildDeathPieChart(runs);
+            buildAvgEntryChart(runs);
+            buildOdds(runs);
+            buildProjectionChart(runsByDay);
+        }
+
+        init();
+    </script>
+
+    <script>
+        function toggleModal(show) {
+            document.getElementById('download-background').style.display = show ? 'flex' : 'none';
+        }
+
+        async function fetchTwitchStatus() {
+            const badge = document.getElementById('twitch-status-badge');
+            if (!badge) return;
+
+            try {
+                const uptimeRes = await fetch('https://decapi.me/twitch/uptime/forsen');
+                const uptimeText = await uptimeRes.text();
+
+                if (uptimeText.toLowerCase().includes('offline')) {
+                    badge.className = 'twitch-badge badge-offline';
+                    badge.removeAttribute('href');
+                    badge.innerHTML = `
+                        <img src="static/forsenLoading-4x.webp" height="20" alt="Offline" style="border-radius: 4px;">
+                        <span style="color: #8b949e; text-decoration: none;">Forsen is <strong>OFFLINE</strong></span>
+                    `;
+                } else {
+                    const gameRes = await fetch('https://decapi.me/twitch/game/forsen');
+                    const gameText = await gameRes.text();
+                    const isMinecraft = gameText.toLowerCase().includes('minecraft');
+                    
+                    badge.href = "https://twitch.tv/forsen";
+                    badge.target = "_blank";
+                    
+                    if (isMinecraft) {
+                        badge.className = 'twitch-badge badge-live-mc';
+                        badge.innerHTML = `
+                            <div class="pulse-dot-red"></div>
+                            <img src="static/SmugTime.webp" height="20" alt="Minecraft">
+                            <span style="color: #55ee55; text-decoration: none;">Forsen is <strong>LIVE</strong> playing Minecraft</span>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-left: 4px; color: #55ee55;"><path d="M8 5v14l11-7z"/></svg>
+                        `;
+                    } else {
+                        badge.className = 'twitch-badge badge-live-other';
+                        badge.innerHTML = `
+                            <div class="pulse-dot-red"></div>
+                            <img src="static/aware.webp" height="20" alt="Other Game">
+                            <span style="color: #ee5555; text-decoration: none;">Forsen is <strong>LIVE</strong> playing ${gameText}</span>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-left: 4px; color: #ee5555;"><path d="M8 5v14l11-7z"/></svg>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error("Twitch Status Error:", error);
+                badge.className = 'twitch-badge badge-offline';
+                badge.removeAttribute('href');
+                badge.innerHTML = `
+                    <span style="color: #8b949e;">Status Unavailable</span>
+                `;
+            }
+        }
+        
+        fetchTwitchStatus();
+        setInterval(fetchTwitchStatus, 300000);
+
+
+        // --- Polymarket Logic ---
+        const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by";
+        const proxyUrl = "https://corsproxy.io/?url=";
+
+        fetch(proxyUrl + encodeURIComponent(targetUrl))
+            .then(response => response.json())
+            .then(data => {
+                if (data && data[0] && data[0].markets) {
+                    const market = data[0].markets.find(m => m.groupItemTitle === "April 30") || data[0].markets[0];
+                    let yesPrice = 0;
+                    if (market.outcomePrices) {
+                        const prices = JSON.parse(market.outcomePrices);
+                        yesPrice = parseFloat(prices[0]);
+                    }
+                    if (yesPrice === 0 && market.lastTradePrice) yesPrice = market.lastTradePrice;
+
+                    const yesPercentage = Math.round(yesPrice * 100);
+                    const oddsEl = document.getElementById("poly-odds");
+                    if (oddsEl) {
+                        oddsEl.innerText = yesPercentage + "% YES";
+                        // Color styling remains exactly the same
+                        oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
+                        oddsEl.style.textShadow = yesPercentage < 10 ? "0 0 15px rgba(238, 85, 85, 0.2)" : "0 0 15px rgba(74, 222, 128, 0.2)";
+                    }
+                }
+            })
+            .catch(e => console.error("Polymarket Fetch Error:", e));
+    </script>
+</body>
+
+</html>
