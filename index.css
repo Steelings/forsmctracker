@@ -269,9 +269,18 @@ body {
     }
 
     #summary-runs {
-        width: 100%;
-        overflow-x: hidden; /* Disable horizontal scrolling entirely */
-    }
+    width: 100%;
+    max-height: 500px; /* Keeps the card from getting excessively tall */
+    overflow-y: auto;  /* Enables vertical scrolling for long lists */
+    overflow-x: auto;  /* Enables horizontal scrolling so nothing gets cut off */
+    -webkit-overflow-scrolling: touch; /* Smooth swiping on mobile */
+    padding-bottom: 10px; /* Space for the scrollbar */
+}
+
+/* Ensure the rows inside don't squish, forcing the horizontal scroll instead */
+#summary-runs > div {
+    min-width: 400px; /* Forces the container to stay wide enough to read the timestamps */
+}
 
     #summary-runs > div:first-child {
         flex-direction: column !important;
@@ -348,8 +357,9 @@ body {
     .stat-value {
         font-size: 1.5rem; 
     }
-    
+
     .pie-layout-wrapper {
         flex-direction: column;
     }
 }
+
