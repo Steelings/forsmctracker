@@ -100,17 +100,7 @@ export function buildDeathPieChart(runs) {
         "Other": "static/aware.webp"
     };
 
-   //preload images as HTML Image objects for Chart.js to render
-    const loadedImages = {};
-    Object.keys(imgMap).forEach(key => {
-        const img = new Image();
-        img.src = imgMap[key];
-        img.width = 20;  // Scale down the images for the legend
-        img.height = 20; // scaling
-        loadedImages[key] = img;
-    });
-
-    // deaths
+    // 1. Tally the deaths
     runs.forEach(run => {
         if (run.death) {
             let cause = "Other";
@@ -130,20 +120,22 @@ export function buildDeathPieChart(runs) {
 
     const sortedLabels = Object.keys(deathCounts).sort((a, b) => deathCounts[b] - deathCounts[a]);
     const sortedData = sortedLabels.map(label => deathCounts[label]);
+    const backgroundColors = ['#ee5555', '#558877', '#8855ee', '#eeaa55', '#635b55', '#7a0000', '#252540', '#30363d'];
     
     const ctx = document.getElementById('death-pie-chart');
     if (!ctx) return;
 
+    // 2. Calculate total for percentages
+    const totalDeaths = sortedData.reduce((a, b) => a + b, 0);
+
     // 3. Initialize the Chart
-    const myChart = new Chart(ctx.getContext('2d'), {
+    new Chart(ctx.getContext('2d'), {
         type: 'pie',
         data: {
             labels: sortedLabels,
             datasets: [{
                 data: sortedData,
-                backgroundColor: [
-                    '#ee5555', '#558877', '#8855ee', '#eeaa55', '#635b55', '#7a0000', '#252540', '#30363d'
-                ],
+                backgroundColor: backgroundColors,
                 borderColor: '#161b22',
                 borderWidth: 3
             }]
@@ -152,42 +144,9 @@ export function buildDeathPieChart(runs) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                // TURN OFF DEFAULT CANVAS LEGEND
                 legend: {
-                    position: 'right',
-                    labels: {
-                        color: '#8b949e',
-                        padding: 20,
-                        font: { family: 'JetBrains Mono', size: 12 },
-                        usePointStyle: true,
-                        
-                        // 4. Custom label generator to include Percentages and the loaded Images
-                        generateLabels: function(chart) {
-                            const data = chart.data;
-                            if (data.labels.length && data.datasets.length) {
-                                const dataset = data.datasets[0];
-                                const total = dataset.data.reduce((acc, curr) => acc + curr, 0);
-                                
-                                return data.labels.map((label, i) => {
-                                    const value = dataset.data[i];
-                                    const percentage = ((value / total) * 100).toFixed(1) + "%";
-                                    const meta = chart.getDatasetMeta(0);
-                                    const style = meta.controller.getStyle(i);
-
-                                    return {
-                                        text: `${percentage} ${label}`, // e.g., "35.2% Piglins"
-                                        fillStyle: style.backgroundColor,
-                                        strokeStyle: style.borderColor,
-                                        lineWidth: style.borderWidth,
-                                        hidden: isNaN(dataset.data[i]) || meta.data[i].hidden,
-                                        index: i,
-                                        // Pass the preloaded Image object (fallback to circle/rect if missing)
-                                        pointStyle: loadedImages[label] || 'rectRounded' 
-                                    };
-                                });
-                            }
-                            return [];
-                        }
-                    }
+                    display: false 
                 },
                 tooltip: {
                     backgroundColor: '#161b22',
@@ -195,9 +154,8 @@ export function buildDeathPieChart(runs) {
                     bodyFont: { family: 'JetBrains Mono' },
                     callbacks: {
                         label: (context) => {
-                            const sum = context.dataset.data.reduce((a, b) => a + b, 0);
                             const value = context.raw;
-                            const percentage = ((value / sum) * 100).toFixed(1) + "%";
+                            const percentage = ((value / totalDeaths) * 100).toFixed(1) + "%";
                             return ` ${context.label}: ${value} (${percentage})`;
                         }
                     }
@@ -206,10 +164,27 @@ export function buildDeathPieChart(runs) {
         }
     });
 
-    // 5. Force the chart to update once the images are fetched so they don't render blank initially
-    Object.values(loadedImages).forEach(img => {
-        img.onload = () => myChart.update();
+    // Generate the Custom HTML Legend (This allows animated WebPs and color boxes!)
+    const legendContainer = document.getElementById('custom-legend');
+    if (!legendContainer) return;
+
+    let legendHTML = '';
+    sortedLabels.forEach((label, index) => {
+        const value = sortedData[index];
+        const percentage = ((value / totalDeaths) * 100).toFixed(1) + "%";
+        const color = backgroundColors[index % backgroundColors.length];
+        const imgSrc = imgMap[label] || "static/aware.webp"; // Fallback image
+
+        legendHTML += `
+            <div class="legend-item">
+                <div class="legend-color-box" style="background-color: ${color};"></div>
+                <img src="${imgSrc}" class="legend-icon" alt="${label}" />
+                <span>${percentage} ${label}</span>
+            </div>
+        `;
     });
+
+    legendContainer.innerHTML = legendHTML;
 }
 
 export function buildProjectionChart(runsByDay) {

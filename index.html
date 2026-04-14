@@ -93,8 +93,11 @@
 
         <div class="stat-card pie-card">
             <h3>Run Killers</h3>
-            <div class="pie-wrapper">
-                <canvas id="death-pie-chart"></canvas>
+            <div class="pie-layout-wrapper" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;">
+                <div class="pie-wrapper" style="height: 300px; flex: 1; min-width: 250px;">
+                    <canvas id="death-pie-chart"></canvas>
+                </div>
+                <div id="custom-legend" class="custom-legend-container"></div>
             </div>
         </div>
 

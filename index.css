@@ -291,3 +291,65 @@ body {
         height: 20px !important;
     }
 }
+
+/* --- CUSTOM HTML LEGEND STYLES --- */
+.custom-legend-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85rem;
+    color: #8b949e;
+    min-width: 150px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-color-box {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 1px solid #161b22;
+}
+
+.legend-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* --- ENHANCED MOBILE RESPONSIVENESS (< 400px) --- */
+@media (max-width: 480px) {
+    
+    .dashboard-grid { 
+        grid-template-columns: repeat(2, 1fr); /
+        padding: 10px; 
+        gap: 10px; 
+    }
+    
+    .pie-card, .insights-card, .stat-card[style*="span"] { 
+        grid-column: 1 / -1 !important; 
+    }
+
+    .card { 
+        margin: 15px 10px; 
+        padding: 15px; 
+        width: auto; 
+    }
+
+    .stat-card {
+        padding: 15px 10px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem; 
+    }
+    
+    .pie-layout-wrapper {
+        flex-direction: column;
+    }
+}
