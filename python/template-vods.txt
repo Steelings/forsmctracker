@@ -1,7 +1,7 @@
 $env:PYTHONUNBUFFERED="1"
-$env:VOD_URL="https://www.twitch.tv/videos/2747875958"
-$env:START_TIMESTAMP="01:58:00"
-$env:VOD_DATE="Apr 14"
-Write-Host "Starting April 14..." -ForegroundColor Green
-python python/run.pymer
+$env:VOD_URL="https://www.twitch.tv/videos/2749448352"
+$env:START_TIMESTAMP="01:59:12"
+$env:VOD_DATE="Apr 16"
+Write-Host "Starting April 16..." -ForegroundColor Green
+python python/run.py
 python python\merge_outputs.py
