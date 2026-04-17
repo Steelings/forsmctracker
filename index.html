@@ -393,7 +393,35 @@
             buildPredictions(runs);
             buildDeathPieChart(runs);
             buildAvgEntryChart(runs);
+            
+            // Build the original table structure
             buildOdds(runs);
+
+            // --- INJECTED CODE: Replace Table Text with Images ---
+            const oddsTableBody = document.getElementById('odds-chance');
+            if (oddsTableBody) {
+                const stageImages = {
+                    'Nether': 'static/nether.jpeg',
+                    'Struct 1': 'static/bastion.jpeg',
+                    'Struct 2': 'static/fortress.jpeg',
+                    'Blind': 'static/first_portal.jpeg',
+                    'Stronghold': 'static/stronghold.jpeg',
+                    'End': 'static/end.jpeg'
+                };
+
+                Array.from(oddsTableBody.querySelectorAll('tr')).forEach(row => {
+                    const firstCell = row.cells[0];
+                    if (firstCell) {
+                        const stageName = firstCell.textContent.trim();
+                        // If the text matches one of our keys, replace it with an image
+                        if (stageImages[stageName]) {
+                            firstCell.innerHTML = `<img src="${stageImages[stageName]}" title="${stageName}" style="width: 24px; height: 24px; vertical-align: middle;">`;
+                        }
+                    }
+                });
+            }
+            // -----------------------------------------------------
+
             buildProjectionChart(runsByDay);
         }
 

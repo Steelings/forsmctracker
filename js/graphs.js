@@ -36,97 +36,107 @@ export function buildAvgEntryChart(runs) {
     const strongPoints = uniqueDates.map(date => getAvg(dailyData[date].strongholds));
     const endPoints = uniqueDates.map(date => getAvg(dailyData[date].ends));
 
-    paceChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: uniqueDates, 
-            datasets: [
-                {
-                    label: 'Nether',
-                    data: netherPoints,
-                    borderColor: C_NETHER,
-                    backgroundColor: C_NETHER,
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 3,
-                    spanGaps: true // Connects the line even if he missed a day
-                },
-                {
-                    label: 'Structure',
-                    data: structPoints,
-                    borderColor: '#8b949e', // Grey
-                    backgroundColor: '#8b949e',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 3,
-                    spanGaps: true
-                },
-                {
-                    label: 'Stronghold',
-                    data: strongPoints,
-                    borderColor: C_STRONGHOLD,
-                    backgroundColor: C_STRONGHOLD,
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 3,
-                    showLine: false 
-                },
-                {
-                    label: 'End',
-                    data: endPoints,
-                    borderColor: C_END,
-                    backgroundColor: C_END,
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 4,
-                    showLine: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    type: 'category', 
-                    ticks: { color: '#8b949e' },
-                    grid: { color: '#30363d' }
-                },
-                y: {
-                    reverse: true, // Faster times at the top
-                    ticks: {
-                        color: '#8b949e',
-                        callback: function(value) {
-                            // Format Y-axis left labels as MM:SS
-                            const m = Math.floor(value / 60);
-                            const s = Math.floor(value % 60).toString().padStart(2, '0');
-                            return `${m}:${s}`;
-                        }
-                    },
-                    grid: { color: '#30363d' }
-                }
+    // Pre-load images and set their dimensions
+const imgNether = new Image(16, 16); 
+imgNether.src = 'static/nether.jpeg';
+
+const imgStruct = new Image(16, 16); 
+imgStruct.src = 'static/fortress.jpeg'; 
+
+const imgStronghold = new Image(16, 16); 
+imgStronghold.src = 'static/stronghold.jpeg';
+
+const imgEnd = new Image(16, 16); 
+imgEnd.src = 'static/end.jpeg';
+
+paceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: uniqueDates, 
+        datasets: [
+            {
+                label: 'Nether',
+                data: netherPoints,
+                borderColor: C_NETHER,
+                backgroundColor: C_NETHER,
+                borderWidth: 2,
+                tension: 0.3,
+                pointStyle: imgNether, 
+                spanGaps: true 
             },
-            plugins: {
-                legend: {
-                    labels: { color: '#c9d1d9', usePointStyle: true, boxWidth: 8 }
+            {
+                label: 'Structure',
+                data: structPoints,
+                borderColor: '#8b949e', 
+                backgroundColor: '#8b949e',
+                borderWidth: 2,
+                tension: 0.3,
+                pointStyle: imgStruct, 
+                spanGaps: true
+            },
+            {
+                label: 'Stronghold',
+                data: strongPoints,
+                borderColor: C_STRONGHOLD,
+                backgroundColor: C_STRONGHOLD,
+                borderWidth: 2,
+                tension: 0.3,
+                pointStyle: imgStronghold, 
+                showLine: false 
+            },
+            {
+                label: 'End',
+                data: endPoints,
+                borderColor: C_END,
+                backgroundColor: C_END,
+                borderWidth: 2,
+                tension: 0.3,
+                pointStyle: imgEnd, 
+                showLine: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: 'category', 
+                ticks: { color: '#8b949e' },
+                grid: { color: '#30363d' }
+            },
+            y: {
+                reverse: true, // Faster times at the top
+                ticks: {
+                    color: '#8b949e',
+                    callback: function(value) {
+                        const m = Math.floor(value / 60);
+                        const s = Math.floor(value % 60).toString().padStart(2, '0');
+                        return `${m}:${s}`;
+                    }
                 },
-                tooltip: {
-                    callbacks: {
-                        // Title is now just the exact category label (e.g. "Apr 01")
-                        title: function(tooltipItems) {
-                            return tooltipItems[0].label; 
-                        },
-                        // Keep the exact MM:SS formatting for the hover data
-                        label: function(context) {
-                            const val = context.parsed.y;
-                            if (val === null) return null;
-                            const m = Math.floor(val / 60);
-                            const s = Math.floor(val % 60).toString().padStart(2, '0');
-                            return `${context.dataset.label}: ${m}:${s}`;
-                        }
+                grid: { color: '#30363d' }
+            }
+        },
+        plugins: {
+            legend: {
+                labels: { color: '#c9d1d9', usePointStyle: true }
+            },
+            tooltip: {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        return tooltipItems[0].label; 
+                    },
+                    label: function(context) {
+                        const val = context.parsed.y;
+                        if (val === null) return null;
+                        const m = Math.floor(val / 60);
+                        const s = Math.floor(val % 60).toString().padStart(2, '0');
+                        return `${context.dataset.label}: ${m}:${s}`;
                     }
                 }
             }
         }
-    });
+    }
+});
 }
