@@ -27,7 +27,7 @@ export function buildAvgEntryChart(runs) {
         if (run.end) dailyData[run.date].ends.push(run.end);
     });
 
-    // Helper to average arrays safely
+    // Helper to average arrays safely (Already works perfectly for 1 entry!)
     const getAvg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
 
     // Calculate averages
@@ -36,107 +36,110 @@ export function buildAvgEntryChart(runs) {
     const strongPoints = uniqueDates.map(date => getAvg(dailyData[date].strongholds));
     const endPoints = uniqueDates.map(date => getAvg(dailyData[date].ends));
 
-    // Pre-load images and set their dimensions
-const imgNether = new Image(16, 16); 
-imgNether.src = 'static/nether.jpeg';
+    // Pre-load images with an onload event to update the chart instantly
+    const loadImage = (src) => {
+        const img = new Image(16, 16); 
+        img.src = src;
+        img.onload = () => { 
+            // This forces Chart.js to redraw once the image is ready, fixing the "missing" points
+            if (paceChart) paceChart.update(); 
+        };
+        return img;
+    };
 
-const imgStruct = new Image(16, 16); 
-imgStruct.src = 'static/fortress.png'; 
+    const imgNether = loadImage('static/nether.jpeg');
+    const imgStruct = loadImage('static/fortress.png');
+    const imgStronghold = loadImage('static/stronghold.png');
+    const imgEnd = loadImage('static/end.png');
 
-const imgStronghold = new Image(16, 16); 
-imgStronghold.src = 'static/stronghold.png';
-
-const imgEnd = new Image(16, 16); 
-imgEnd.src = 'static/end.png';
-
-paceChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: uniqueDates, 
-        datasets: [
-            {
-                label: 'Nether',
-                data: netherPoints,
-                borderColor: C_NETHER,
-                backgroundColor: C_NETHER,
-                borderWidth: 2,
-                tension: 0.3,
-                pointStyle: imgNether, 
-                spanGaps: true 
-            },
-            {
-                label: 'Structure',
-                data: structPoints,
-                borderColor: '#8b949e', 
-                backgroundColor: '#8b949e',
-                borderWidth: 2,
-                tension: 0.3,
-                pointStyle: imgStruct, 
-                spanGaps: true
-            },
-            {
-                label: 'Stronghold',
-                data: strongPoints,
-                borderColor: C_STRONGHOLD,
-                backgroundColor: C_STRONGHOLD,
-                borderWidth: 2,
-                tension: 0.3,
-                pointStyle: imgStronghold, 
-                showLine: false 
-            },
-            {
-                label: 'End',
-                data: endPoints,
-                borderColor: C_END,
-                backgroundColor: C_END,
-                borderWidth: 2,
-                tension: 0.3,
-                pointStyle: imgEnd, 
-                showLine: false
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            x: {
-                type: 'category', 
-                ticks: { color: '#8b949e' },
-                grid: { color: '#30363d' }
-            },
-            y: {
-                reverse: true, // Faster times at the top
-                ticks: {
-                    color: '#8b949e',
-                    callback: function(value) {
-                        const m = Math.floor(value / 60);
-                        const s = Math.floor(value % 60).toString().padStart(2, '0');
-                        return `${m}:${s}`;
-                    }
+    paceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: uniqueDates, 
+            datasets: [
+                {
+                    label: 'Nether',
+                    data: netherPoints,
+                    borderColor: C_NETHER,
+                    backgroundColor: C_NETHER,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointStyle: imgNether, 
+                    spanGaps: true 
                 },
-                grid: { color: '#30363d' }
-            }
+                {
+                    label: 'Structure',
+                    data: structPoints,
+                    borderColor: '#8b949e', 
+                    backgroundColor: '#8b949e',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointStyle: imgStruct, 
+                    spanGaps: true
+                },
+                {
+                    label: 'Stronghold',
+                    data: strongPoints,
+                    borderColor: C_STRONGHOLD,
+                    backgroundColor: C_STRONGHOLD,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointStyle: imgStronghold, 
+                    showLine: false 
+                },
+                {
+                    label: 'End',
+                    data: endPoints,
+                    borderColor: C_END,
+                    backgroundColor: C_END,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointStyle: imgEnd, 
+                    showLine: false
+                }
+            ]
         },
-        plugins: {
-            legend: {
-                labels: { color: '#c9d1d9', usePointStyle: true }
-            },
-            tooltip: {
-                callbacks: {
-                    title: function(tooltipItems) {
-                        return tooltipItems[0].label; 
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'category', 
+                    ticks: { color: '#8b949e' },
+                    grid: { color: '#30363d' }
+                },
+                y: {
+                    reverse: true, // Faster times at the top
+                    ticks: {
+                        color: '#8b949e',
+                        callback: function(value) {
+                            const m = Math.floor(value / 60);
+                            const s = Math.floor(value % 60).toString().padStart(2, '0');
+                            return `${m}:${s}`;
+                        }
                     },
-                    label: function(context) {
-                        const val = context.parsed.y;
-                        if (val === null) return null;
-                        const m = Math.floor(val / 60);
-                        const s = Math.floor(val % 60).toString().padStart(2, '0');
-                        return `${context.dataset.label}: ${m}:${s}`;
+                    grid: { color: '#30363d' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#c9d1d9', usePointStyle: true }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return tooltipItems[0].label; 
+                        },
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            if (val === null) return null;
+                            const m = Math.floor(val / 60);
+                            const s = Math.floor(val % 60).toString().padStart(2, '0');
+                            return `${context.dataset.label}: ${m}:${s}`;
+                        }
                     }
                 }
             }
         }
-    }
-});
+    });
 }
