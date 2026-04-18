@@ -17,13 +17,17 @@ export function buildAvgEntryChart(runs) {
         dailyData[date] = { nethers: [], bastions: [], fortresses: [], blinds: [], strongholds: [], ends: [] };
     });
 
-    // Populate data using the correct exact keys from your JSON
     runs.forEach(run => {
         if (!run.date || run.date === "LIVE" || !dailyData[run.date]) return;
         
         if (run.nether) dailyData[run.date].nethers.push(run.nether);
-        if (run.bastion) dailyData[run.date].bastions.push(run.bastion);
-        if (run.fort) dailyData[run.date].fortresses.push(run.fort);
+        
+        // edit, a run is dead anyways of only one structure is found
+        if (run.bastion && run.fort) {
+            dailyData[run.date].bastions.push(run.bastion);
+            dailyData[run.date].fortresses.push(run.fort);
+        }
+        
         if (run.blind) dailyData[run.date].blinds.push(run.blind);
         if (run.stronghold) dailyData[run.date].strongholds.push(run.stronghold);
         if (run.end) dailyData[run.date].ends.push(run.end);
@@ -40,9 +44,8 @@ export function buildAvgEntryChart(runs) {
     const strongPoints = uniqueDates.map(date => getAvg(dailyData[date].strongholds));
     const endPoints = uniqueDates.map(date => getAvg(dailyData[date].ends));
 
-    // Pre-load images with an onload event to prevent invisible points
     const loadImage = (src) => {
-        const img = new Image(16, 16); 
+        const img = new Image(20, 20); // increase size
         img.src = src;
         img.onload = () => { 
             if (paceChart) paceChart.update(); 
@@ -148,7 +151,19 @@ export function buildAvgEntryChart(runs) {
             },
             plugins: {
                 legend: {
-                    labels: { color: '#c9d1d9', usePointStyle: true }
+                    title: {
+                        display: true,
+                        text: '👆 Click a split below to show or hide it from the chart',
+                        color: '#8b949e',
+                        font: { size: 12, style: 'italic', family: "'JetBrains Mono', monospace" },
+                        padding: { bottom: 10 }
+                    },
+                    labels: { 
+                        color: '#c9d1d9', 
+                        usePointStyle: true,
+                        font: { size: 14, family: "'JetBrains Mono', monospace" }, 
+                        padding: 20 
+                    }
                 },
                 tooltip: {
                     callbacks: {
