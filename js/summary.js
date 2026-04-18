@@ -264,6 +264,7 @@ export function buildProjectionChart(runsByDay) {
             scales: {
                 y: {
                     min: 0,
+                    max: 400, 
                     title: { display: true, text: 'Expected Days Remaining', color: '#8b949e' },
                     grid: { color: 'rgba(48, 54, 61, 0.3)' },
                     ticks: { color: '#8b949e' }
