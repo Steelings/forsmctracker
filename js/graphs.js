@@ -17,12 +17,14 @@ export function buildAvgEntryChart(runs) {
         dailyData[date] = { nethers: [], structs: [], strongholds: [], ends: [] };
     });
 
-    // Populate data using original keys (run.blind for structures)
     runs.forEach(run => {
         if (!run.date || run.date === "LIVE" || !dailyData[run.date]) return;
         
         if (run.nether) dailyData[run.date].nethers.push(run.nether);
-        if (run.blind) dailyData[run.date].structs.push(run.blind); 
+        
+        // FIX: Using run.fort to track Fortress time instead of run.blind
+        if (run.fort) dailyData[run.date].structs.push(run.fort); 
+        
         if (run.stronghold) dailyData[run.date].strongholds.push(run.stronghold);
         if (run.end) dailyData[run.date].ends.push(run.end);
     });
