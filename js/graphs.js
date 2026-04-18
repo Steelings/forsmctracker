@@ -11,22 +11,33 @@ export function buildAvgEntryChart(runs) {
     // Sort dates properly
     uniqueDates.sort((a, b) => new Date(`${a} 2024`).getTime() - new Date(`${b} 2024`).getTime());
 
-    // Initialize arrays for 6 splits
+    // Initialize arrays for the splits
     const dailyData = {};
     uniqueDates.forEach(date => {
-        dailyData[date] = { nethers: [], bastions: [], fortresses: [], blinds: [], strongholds: [], ends: [] };
+        dailyData[date] = { nethers: [], s1s: [], s2s: [], blinds: [], strongholds: [], ends: [] };
     });
 
+    // S1 & S2 Logic
     runs.forEach(run => {
         if (!run.date || run.date === "LIVE" || !dailyData[run.date]) return;
         
         if (run.nether) dailyData[run.date].nethers.push(run.nether);
         
-        // edit, a run is dead anyways of only one structure is found
+        let s1 = null;
+        let s2 = null;
+
+        // Determine First (S1) and Second (S2) structures
         if (run.bastion && run.fort) {
-            dailyData[run.date].bastions.push(run.bastion);
-            dailyData[run.date].fortresses.push(run.fort);
+            s1 = Math.min(run.bastion, run.fort);
+            s2 = Math.max(run.bastion, run.fort);
+        } else if (run.bastion) {
+            s1 = run.bastion;
+        } else if (run.fort) {
+            s1 = run.fort;
         }
+
+        if (s1) dailyData[run.date].s1s.push(s1);
+        if (s2) dailyData[run.date].s2s.push(s2);
         
         if (run.blind) dailyData[run.date].blinds.push(run.blind);
         if (run.stronghold) dailyData[run.date].strongholds.push(run.stronghold);
@@ -38,14 +49,15 @@ export function buildAvgEntryChart(runs) {
 
     // Calculate averages
     const netherPoints = uniqueDates.map(date => getAvg(dailyData[date].nethers));
-    const bastionPoints = uniqueDates.map(date => getAvg(dailyData[date].bastions));
-    const fortPoints = uniqueDates.map(date => getAvg(dailyData[date].fortresses));
+    const s1Points = uniqueDates.map(date => getAvg(dailyData[date].s1s));
+    const s2Points = uniqueDates.map(date => getAvg(dailyData[date].s2s));
     const blindPoints = uniqueDates.map(date => getAvg(dailyData[date].blinds));
     const strongPoints = uniqueDates.map(date => getAvg(dailyData[date].strongholds));
     const endPoints = uniqueDates.map(date => getAvg(dailyData[date].ends));
 
+    // Pre-load images with an onload event to prevent invisible points
     const loadImage = (src) => {
-        const img = new Image(20, 20); // increase size
+        const img = new Image(20, 20); // 20x20 for better visibility
         img.src = src;
         img.onload = () => { 
             if (paceChart) paceChart.update(); 
@@ -54,8 +66,8 @@ export function buildAvgEntryChart(runs) {
     };
 
     const imgNether = loadImage('static/nether.jpeg');
-    const imgBastion = loadImage('static/bastion.png');
-    const imgFortress = loadImage('static/fortress.png');
+    const imgS1 = loadImage('static/bastion.png');
+    const imgS2 = loadImage('static/fortress.png');
     const imgBlind = loadImage('static/first_portal.png');
     const imgStronghold = loadImage('static/stronghold.png');
     const imgEnd = loadImage('static/end.png');
@@ -73,37 +85,37 @@ export function buildAvgEntryChart(runs) {
                     borderWidth: 2,
                     tension: 0.3,
                     pointStyle: imgNether, 
-                    spanGaps: true 
+                    spanGaps: false // Will now break on dry spells
                 },
                 {
-                    label: 'Bastion',
-                    data: bastionPoints,
-                    borderColor: C_BASTION || '#f6d32d', // Fallback to yellow if missing
+                    label: 'S1',
+                    data: s1Points,
+                    borderColor: C_BASTION || '#f6d32d',
                     backgroundColor: C_BASTION || '#f6d32d',
                     borderWidth: 2,
                     tension: 0.3,
-                    pointStyle: imgBastion, 
-                    spanGaps: true 
+                    pointStyle: imgS1, 
+                    spanGaps: false 
                 },
                 {
-                    label: 'Fortress',
-                    data: fortPoints,
-                    borderColor: C_FORT || '#800000', // Fallback to bordeaux if missing
+                    label: 'S2',
+                    data: s2Points,
+                    borderColor: C_FORT || '#800000',
                     backgroundColor: C_FORT || '#800000',
                     borderWidth: 2,
                     tension: 0.3,
-                    pointStyle: imgFortress, 
-                    spanGaps: true
+                    pointStyle: imgS2, 
+                    spanGaps: false
                 },
                 {
                     label: 'Blind',
                     data: blindPoints,
-                    borderColor: C_BLIND || '#2edb54', // Fallback to green if missing
+                    borderColor: C_BLIND || '#2edb54',
                     backgroundColor: C_BLIND || '#2edb54',
                     borderWidth: 2,
                     tension: 0.3,
                     pointStyle: imgBlind, 
-                    spanGaps: true
+                    spanGaps: false
                 },
                 {
                     label: 'Stronghold',
@@ -113,7 +125,7 @@ export function buildAvgEntryChart(runs) {
                     borderWidth: 2,
                     tension: 0.3,
                     pointStyle: imgStronghold, 
-                    showLine: false // Kept false so late-game throws don't draw chaotic lines
+                    showLine: false 
                 },
                 {
                     label: 'End',
@@ -161,8 +173,8 @@ export function buildAvgEntryChart(runs) {
                     labels: { 
                         color: '#c9d1d9', 
                         usePointStyle: true,
-                        font: { size: 14, family: "'JetBrains Mono', monospace" }, 
-                        padding: 20 
+                        font: { size: 14, family: "'JetBrains Mono', monospace" },
+                        padding: 20
                     }
                 },
                 tooltip: {
