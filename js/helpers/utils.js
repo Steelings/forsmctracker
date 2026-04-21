@@ -24,8 +24,19 @@ export function formatMMSS(totalSeconds) {
 
 // Convert a run timer to total seconds as a number
 export function seconds(timer) {
-    const split = timer.split(".");
-    return Number(split[0]) * 60 + Number(split[1]) + Number(split[2]) / 1000;
+    if (!timer) return 0;
+    
+    // Split on BOTH colons and dots
+    const split = timer.toString().split(/[.:]/); 
+    
+    if (split.length === 3) {
+        // Format: MM:SS.ms (e.g. 16:59.561)
+        return Number(split[0]) * 60 + Number(split[1]) + Number(split[2]) / 1000;
+    } else if (split.length === 2) {
+        // Format: MM:SS (e.g. 17:10)
+        return Number(split[0]) * 60 + Number(split[1]);
+    }
+    return 0;
 }
 
 // Convert minutes and seconds strings to total seconds, with basic validation

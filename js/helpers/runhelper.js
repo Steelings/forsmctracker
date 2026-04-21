@@ -129,6 +129,7 @@ export function getSplits(runs, dayLimit = Infinity) {
     const blinds = {};
     const strongholds = {};
     const ends = {};
+    const finishes = {}; // add in finish
 
     const totalRunCount = {};
     for (let r = runs.length - 1; r >= 0; r--) {
@@ -154,7 +155,11 @@ export function getSplits(runs, dayLimit = Infinity) {
 
         const end = stronghold !== null && run.end ? run.end : null;
         if (end) pushOrCreate(ends, run.date, end);
+
+        // find finish time
+        const finish = end !== null && run.finish ? run.finish : null;
+        if (finish) pushOrCreate(finishes, run.date, finish);
     }
 
-    return [ totalRunCount, netherEntries, s1Entries, s2Entries, blinds, strongholds, ends ];
+    return [ totalRunCount, netherEntries, s1Entries, s2Entries, blinds, strongholds, ends, finishes ];
 }

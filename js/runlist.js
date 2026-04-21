@@ -1,4 +1,4 @@
-import { seconds, C_NETHER, C_STRONGHOLD, C_END } from "./helpers/utils.js";
+import { seconds, C_NETHER, C_STRONGHOLD, C_END, C_FINISH } from "./helpers/utils.js";
 
 const RUNS_PER_MINUTE = 45;
 
@@ -61,6 +61,7 @@ export class Runlist {
 
         let processedRuns = this.runs.map((run, r) => {
             let score = 0;
+            if (run.finish) score += 20000; 
             if (run.end) score += 5000;
             if (run.stronghold) score += 1000;
             if (run.blind) score += 500;
@@ -68,12 +69,12 @@ export class Runlist {
 
             const lastTime = seconds(run.runTime);
             
-            // Added explicit labels for the UI tooltips
             const segments = [
                 { label: "Overworld", w: run.nether || lastTime, color: "#55ee55" }, 
                 { label: "Nether", w: run.nether ? (run.stronghold ? run.stronghold - run.nether : lastTime - run.nether) : 0, color: C_NETHER },
                 { label: "Stronghold", w: run.stronghold ? (run.end ? run.end - run.stronghold : lastTime - run.stronghold) : 0, color: C_STRONGHOLD },
-                { label: "End", w: run.end ? (lastTime - run.end) : 0, color: C_END }
+                { label: "End", w: run.end ? (run.finish ? run.finish - run.end : lastTime - run.end) : 0, color: C_END },
+                { label: "Finish", w: run.finish ? Math.max(0, lastTime - run.finish) : 0, color: C_FINISH }
             ].filter(s => s.w > 0);
 
             const deathData = getDeathDetails(run.death);
@@ -118,7 +119,6 @@ export class Runlist {
                 link = `href="${outRun.vod}?t=${tStr}"`;
             }
             
-            // Build the clickable link if a VOD exists, otherwise show plain text
             let runIdentifierHTML = "";
             if (link) {
                 runIdentifierHTML = `
@@ -135,17 +135,18 @@ export class Runlist {
                 `;
             }
             
-            const deathText = outRun.deathData ? outRun.deathData.text : "Reset";
-            const deathImg = outRun.deathData ? outRun.deathData.img : "static/forsenLoading-4x.webp";
+            const isWin = !!outRun.finish;
+            const deathText = isWin ? "VICTORY" : (outRun.deathData ? outRun.deathData.text : "Reset");
+            const deathImg = isWin ? "static/dragon_egg.png" : (outRun.deathData ? outRun.deathData.img : "static/forsenLoading-4x.webp");
+            const winStyle = isWin ? "color: #aaaaff; font-weight: bold; text-shadow: 0 0 8px rgba(170,170,255,0.4);" : "color: #8b949e;";
             
             const deathHTML = `
-                <div style="display: flex; align-items: center; gap: 8px; margin-right: 20px; color: #8b949e; font-size: 0.8rem;" title="${outRun.death || "Manual Reset"}">
+                <div style="display: flex; align-items: center; gap: 8px; margin-right: 20px; font-size: 0.8rem; ${winStyle}" title="${outRun.death || "Manual Reset"}">
                     <span>${deathText}</span>
                     <img src="${deathImg}" width="24" height="24" alt="${deathText}" style="border-radius: 4px;">
                 </div>
             `;
 
-            // Advanced Run Time Formatting (MM:SS.ms)
             let formattedTime = outRun.runTime || "-";
             const timeParts = formattedTime.split(/[.:]/); 
             if (timeParts.length === 3) {
@@ -163,7 +164,7 @@ export class Runlist {
                 
                 <div style="flex-grow: 1; height: 8px; display: flex; background: #21262d; border-radius: 4px; overflow: hidden; margin: 0 20px;">
                     ${outRun.segments.map(s => `
-                        <div title="${s.label} (${Math.floor(s.w / 60)}m ${Math.floor(s.w % 60)}s)" style="width: ${s.w * (RUNS_PER_MINUTE / 60)}px; background-color: ${s.color}; height: 100%; cursor: help;"></div>
+                        <div title="${s.label} (${Math.floor(s.w / 60)}m ${Math.floor(s.w % 60)}s)" style="width: ${s.w * (45 / 60)}px; background-color: ${s.color}; height: 100%; cursor: help;"></div>
                     `).join("")}
                 </div>
 

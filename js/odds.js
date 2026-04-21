@@ -3,10 +3,14 @@ import { fitLogNormal, getSplits } from "./helpers/runhelper.js";
 function reduceSum(obj) { return Object.values(obj).reduce((a, b) => a + b, 0); }
 
 export function buildOdds(runs) {
-    const [counts, nether, s1, s2, blind, strong, end] = getSplits(runs);
+    // <-- NEW: Added finish to the array
+    const [counts, nether, s1, s2, blind, strong, end, finish] = getSplits(runs);
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
-    const splits = [nether, s1, s2, blind, strong, end];
-    const labels = ["Nether", "Struct 1", "Struct 2", "Blind", "Stronghold", "End"];
+    
+    // <-- NEW: Added finish to splits and labels
+    const splits = [nether, s1, s2, blind, strong, end, finish];
+    const labels = ["Nether", "Struct 1", "Struct 2", "Blind", "Stronghold", "End", "Finish"];
+    
     const row = document.getElementById("odds-chance");
 
     if (row && total > 0) {
