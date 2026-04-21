@@ -1,4 +1,4 @@
-import { seconds, C_NETHER, C_STRONGHOLD, C_END, C_FINISH } from "./helpers/utils.js";
+import { seconds, C_NETHER, C_STRONGHOLD, C_END, C_FINISH, C_BLIND } from "./helpers/utils.js";
 
 const RUNS_PER_MINUTE = 45;
 
@@ -71,9 +71,10 @@ export class Runlist {
             
             const segments = [
                 { label: "Overworld", w: run.nether || lastTime, color: "#55ee55" }, 
-                { label: "Nether", w: run.nether ? (run.stronghold ? run.stronghold - run.nether : lastTime - run.nether) : 0, color: C_NETHER },
-                { label: "Stronghold", w: run.stronghold ? (run.end ? run.end - run.stronghold : lastTime - run.stronghold) : 0, color: C_STRONGHOLD },
-                { label: "End", w: run.end ? (run.finish ? run.finish - run.end : lastTime - run.end) : 0, color: C_END },
+                { label: "Nether", w: run.nether ? (run.blind || run.stronghold || run.end || run.finish || lastTime) - run.nether : 0, color: C_NETHER },
+                { label: "Blind", w: run.blind ? (run.stronghold || run.end || run.finish || lastTime) - run.blind : 0, color: C_BLIND },
+                { label: "Stronghold", w: run.stronghold ? (run.end || run.finish || lastTime) - run.stronghold : 0, color: C_STRONGHOLD },
+                { label: "End", w: run.end ? (run.finish || lastTime) - run.end : 0, color: C_END },
                 { label: "Finish", w: run.finish ? Math.max(0, lastTime - run.finish) : 0, color: C_FINISH }
             ].filter(s => s.w > 0);
 
@@ -136,7 +137,7 @@ export class Runlist {
             }
             
             const isWin = !!outRun.finish;
-            const deathText = isWin ? "VICTORY" : (outRun.deathData ? outRun.deathData.text : "Reset");
+            const deathText = isWin ? "FINISH" : (outRun.deathData ? outRun.deathData.text : "Reset"); 
             const deathImg = isWin ? "static/dragon_egg.png" : (outRun.deathData ? outRun.deathData.img : "static/forsenLoading-4x.webp");
             const winStyle = isWin ? "color: #aaaaff; font-weight: bold; text-shadow: 0 0 8px rgba(170,170,255,0.4);" : "color: #8b949e;";
             

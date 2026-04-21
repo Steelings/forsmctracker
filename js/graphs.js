@@ -1,4 +1,4 @@
-import { C_NETHER, C_BASTION, C_FORT, C_BLIND, C_STRONGHOLD, C_END } from "./helpers/utils.js";
+import { C_NETHER, C_BASTION, C_FORT, C_BLIND, C_STRONGHOLD, C_END, C_FINISH } from "./helpers/utils.js";
 
 let paceChart = null;
 
@@ -14,7 +14,7 @@ export function buildAvgEntryChart(runs) {
     // Initialize arrays for the splits
     const dailyData = {};
     uniqueDates.forEach(date => {
-        dailyData[date] = { nethers: [], s1s: [], s2s: [], blinds: [], strongholds: [], ends: [] };
+        dailyData[date] = { nethers: [], s1s: [], s2s: [], blinds: [], strongholds: [], ends: [], finishes: [] };
     });
 
     // S1 & S2 Logic
@@ -42,6 +42,7 @@ export function buildAvgEntryChart(runs) {
         if (run.blind) dailyData[run.date].blinds.push(run.blind);
         if (run.stronghold) dailyData[run.date].strongholds.push(run.stronghold);
         if (run.end) dailyData[run.date].ends.push(run.end);
+        if (run.finish) dailyData[run.date].finishes.push(run.finish); 
     });
 
     // Helper to average arrays safely
@@ -54,6 +55,7 @@ export function buildAvgEntryChart(runs) {
     const blindPoints = uniqueDates.map(date => getAvg(dailyData[date].blinds));
     const strongPoints = uniqueDates.map(date => getAvg(dailyData[date].strongholds));
     const endPoints = uniqueDates.map(date => getAvg(dailyData[date].ends));
+    const finishPoints = uniqueDates.map(date => getAvg(dailyData[date].finishes));
 
     // Pre-load images with an onload event to prevent invisible points
     const loadImage = (src) => {
@@ -71,6 +73,7 @@ export function buildAvgEntryChart(runs) {
     const imgBlind = loadImage('static/first_portal.png');
     const imgStronghold = loadImage('static/stronghold.png');
     const imgEnd = loadImage('static/end.png');
+    const imgFinish = loadImage('static/dragon_egg.png');
 
     paceChart = new Chart(ctx, {
         type: 'line',
@@ -136,6 +139,26 @@ export function buildAvgEntryChart(runs) {
                     tension: 0.3,
                     pointStyle: imgEnd, 
                     showLine: false
+                },
+                {
+                    label: 'End',
+                    data: endPoints,
+                    borderColor: C_END,
+                    backgroundColor: C_END,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointStyle: imgEnd, 
+                    showLine: false
+                },
+                {
+                    label: 'Finish',
+                    data: finishPoints,
+                    borderColor: C_FINISH || '#aaaaff',
+                    backgroundColor: C_FINISH || '#aaaaff',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointStyle: imgFinish, 
+                    showLine: false 
                 }
             ]
         },

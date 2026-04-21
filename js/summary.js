@@ -29,6 +29,7 @@ export function buildDailySummary(runs) {
     updateCard('val-s2-qty', 'val-s2-avg', splits[3]);
     updateCard('val-strong-qty', 'val-strong-avg', splits[5]);
     updateCard('val-end-qty', 'val-end-avg', splits[6]);
+    updateCard('val-finish-qty', 'val-finish-avg', splits[7]);
 
     // --- NEW: Calculate Resets Per Nether for the Insights Card ---
     const totalRuns = runs.length;
