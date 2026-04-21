@@ -1,8 +1,8 @@
-export const C_OVERWORLD = "#55ee55";
+export const C_OVERWORLD = "#55ee62";
 export const C_NETHER = "#ee5555";
-export const C_BASTION = "#f6d32d"; // Changed to Golden Yellow
+export const C_BASTION = "#f6d32d"; 
 export const C_FORT = "#7a0000";
-export const C_BLIND = "#2edb54"; // Changed to Eye of Ender Green
+export const C_BLIND = "#16e9e9"; 
 export const C_STRONGHOLD = "#558877";
 export const C_END = "#eeaa55";
 export const C_FINISH = "#aaaaff";
