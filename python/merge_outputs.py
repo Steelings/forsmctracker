@@ -147,8 +147,13 @@ def main() -> None:
 
     raw_data = []
     for _, name in candidates:
+        print(f"Loading {name}...") # <--- Prints the file it's trying to open
         with open(os.path.join(in_folder, name), "r", encoding="utf-8") as f:
-            raw_data.append(json.load(f))
+            try:
+                raw_data.append(json.load(f))
+            except Exception as e:
+                print(f"\nCRASHED ON THIS FILE: {name}\n") # <--- Catches the error and names the file
+                raise e
 
     filter_raw_data(raw_data)
     runs = build_runs(raw_data)
