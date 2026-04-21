@@ -12,6 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 
+    <link rel="preload" href="static/nether.jpeg" as="image">
+    <link rel="preload" href="static/bastion.png" as="image">
+    <link rel="preload" href="static/fortress.png" as="image">
+    <link rel="preload" href="static/first_portal.png" as="image">
+    <link rel="preload" href="static/stronghold.png" as="image">
+    <link rel="preload" href="static/end.png" as="image">
+    <link rel="preload" href="static/dragon_egg.png" as="image">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 </head>
 
@@ -102,14 +110,14 @@
         <div class="stat-card pie-card">
             <h3>Run Killers</h3>
             <div class="pie-layout-wrapper" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;">
-                <div class="pie-wrapper" style="height: 300px; flex: 1; min-width: 250px;">
+                <div class="pie-wrapper">
                     <canvas id="death-pie-chart"></canvas>
                 </div>
                 <div id="custom-legend" class="custom-legend-container"></div>
             </div>
         </div>
 
-        <div class="stat-card insights-card" style="grid-column: span 3;">
+        <div class="stat-card insights-card">
             <h3 style="text-align: center; margin-bottom: 20px;">Global Insights</h3>
             
             <style>
@@ -215,14 +223,14 @@
             </div>
         </div>
 
-        <div class="stat-card" style="grid-column: span 3; height: 400px; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+        <div class="stat-card projection-card" style="height: 400px; display: flex; flex-direction: column; position: relative; overflow: hidden;">
             <h3 style="text-align: center; color: #8b949e; margin-bottom: 10px;">Projected Timeline to Record</h3>
             <div style="flex-grow: 1; width: 100%;">
                 <canvas id="projection-chart"></canvas>
             </div>
         </div>
 
-        <div class="stat-card" style="grid-column: span 2; height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div class="stat-card poly-card" style="height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
             <h3 style="margin-top: 0; color: #8b949e; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase;">Polymarket Odds</h3>
             <p style="font-size: 0.95rem; margin-bottom: 15px; color: #c9d1d9; text-align: center; max-width: 80%;">Will Forsen beat xQc by April 30?</p>
             <h2 id="poly-odds" style="color: #4ade80; font-size: 3.5rem; margin: 10px 0; text-shadow: 0 0 15px rgba(74, 222, 128, 0.2);">...</h2>
@@ -361,6 +369,7 @@
                         if (d.includes('lava') || d.includes('fell') || d.includes('fire') || d.includes('gravity')) unluckyCount++;
                     }
                     let score = 0;
+                    if (r.finish) score += 20000;
                     if (r.end) score += 5000;
                     if (r.stronghold) score += 1000;
                     if (r.blind) score += 500;
@@ -398,8 +407,6 @@
             buildPredictions(runs);
             buildDeathPieChart(runs);
             buildAvgEntryChart(runs);
-            
-            // Build the original table structure
             buildOdds(runs);
 
             // --- INJECTED CODE: Replace Table Text with Images ---
@@ -493,7 +500,6 @@
         fetchTwitchStatus();
         setInterval(fetchTwitchStatus, 300000);
 
-
         // --- Polymarket Logic ---
         const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by";
         const proxyUrl = "https://corsproxy.io/?url=";
@@ -514,7 +520,6 @@
                     const oddsEl = document.getElementById("poly-odds");
                     if (oddsEl) {
                         oddsEl.innerText = yesPercentage + "% YES";
-                        // Color styling remains exactly the same
                         oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
                         oddsEl.style.textShadow = yesPercentage < 10 ? "0 0 15px rgba(238, 85, 85, 0.2)" : "0 0 15px rgba(74, 222, 128, 0.2)";
                     }
