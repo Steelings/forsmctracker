@@ -225,11 +225,18 @@ finally:
     except:
         pass
 
-    # Overwrite the trailing "," with "]}"
+    #overwrite the trailing "," with "]}" regardless of OS line endings
     if not LIVE:
         with open(OUTPUT_FILE, "r+b") as f:
             f.seek(0, os.SEEK_END)
-            if f.tell() >= 2:
-                f.seek(-2, os.SEEK_END)
-                f.write(b"]}\n")
-                f.truncate()
+            pos = f.tell()
+            # go backward byte-by-byte to find the last comma
+            while pos > 0:
+                pos -= 1
+                f.seek(pos)
+                char = f.read(1)
+                if char == b',':
+                    f.seek(pos)       
+                    f.write(b"]}\n")  # overwrite
+                    f.truncate()      # truncate after it
+                    break
