@@ -73,18 +73,20 @@ def trigger_processing(vod_url, start_timestamp, vod_date):
 
 # deep sleep function
 def is_in_expected_stream_window():
-    """Returns True if the current local time is between 15:30 (3:30 PM) and 23:00 (11:00 PM)."""
+    """Returns True if the current local time is between 15:50 and 22:15 ."""
     now = datetime.now()
-    if 15 <= now.hour <= 22:
-        if now.hour == 15 and now.minute < 30:
-            return False
-        return True
-    return False
+    
+    # convert time to total minutes
+    current_minutes = now.hour * 60 + now.minute
+    start_minutes = 15 * 60 + 50  # 950 (15:50)
+    end_minutes = 22 * 60 + 15    # 1335 (22:15)
+    
+    return start_minutes <= current_minutes <= end_minutes
 
 def get_seconds_until_next_shift():
-    """Calculates the exact number of seconds until the next 15:30 (3:30 PM)."""
+    """Calculates the exact number of seconds until the next 15:50"""
     now = datetime.now()
-    target = now.replace(hour=15, minute=30, second=0, microsecond=0)
+    target = now.replace(hour=15, minute=50, second=0, microsecond=0)
     
     # go out of sleep time the next day
     if now >= target:
@@ -105,7 +107,7 @@ def main():
             hours, remainder = divmod(sleep_sec, 3600)
             minutes, _ = divmod(remainder, 60)
             
-            print(f"[{datetime.now().strftime('%H:%M')}] Outside stream hours. Deep sleeping for {int(hours)}h {int(minutes)}m until 15:30...")
+            print(f"[{datetime.now().strftime('%H:%M')}] Outside stream hours. Deep sleeping for {int(hours)}h {int(minutes)}m until 15:50...")
             time.sleep(sleep_sec)
             print(f"[{datetime.now().strftime('%H:%M')}] wake up detected - Starting API polling...")
             continue
