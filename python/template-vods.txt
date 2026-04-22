@@ -5,3 +5,4 @@ $env:VOD_DATE="Apr 21"
 Write-Host "Starting April 21..." -ForegroundColor Green
 python python/run.py
 python python\merge_outputs.py
+python python\patch_run.py

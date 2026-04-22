@@ -141,16 +141,6 @@ export function buildAvgEntryChart(runs) {
                     showLine: false
                 },
                 {
-                    label: 'End',
-                    data: endPoints,
-                    borderColor: C_END,
-                    backgroundColor: C_END,
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointStyle: imgEnd, 
-                    showLine: false
-                },
-                {
                     label: 'Finish',
                     data: finishPoints,
                     borderColor: C_FINISH || '#aaaaff',
