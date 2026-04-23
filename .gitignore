@@ -1,4 +1,4 @@
 python/venv
 python/*_.json
 .idea
-.env
+.env 
