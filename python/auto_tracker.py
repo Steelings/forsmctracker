@@ -100,6 +100,7 @@ def main():
     
     is_playing_mc = False
     mc_start_time_str = None
+    forsen_user_id = None
     
     while True:
         if not is_in_expected_stream_window() and not is_playing_mc:
@@ -122,7 +123,9 @@ def main():
         stream = get_stream_info(token)
         
         if stream:
+            forsen_user_id = stream.get('user_id')
             current_game = stream.get('game_name')
+            
             # minecraft logic - only start rendering vods when its on mc category
             if current_game == 'Minecraft' and not is_playing_mc:
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] mc detected")
@@ -134,7 +137,7 @@ def main():
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Forsen stopped playing Minecraft (Switched to {current_game}).")
                 is_playing_mc = False
                 
-                vod_info = get_latest_vod(token, stream.get('user_id'))
+                vod_info = get_latest_vod(token, forsen_user_id)
                 if vod_info:
                     vod_date = datetime.now().strftime("%b %d") 
                     trigger_processing(vod_info.get('url'), mc_start_time_str, vod_date)
@@ -142,12 +145,21 @@ def main():
                     print("Could not find the VOD URL!")
                     
             elif is_playing_mc:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Still playing Minecraft...")
+                pass
                 
         else:
             if is_playing_mc:
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Stream ended while playing Minecraft.")
                 is_playing_mc = False
+                
+                if forsen_user_id:
+                    print("Fetching VOD for idiotasen to not swap category when going offline")
+                    vod_info = get_latest_vod(token, forsen_user_id)
+                    if vod_info:
+                        vod_date = datetime.now().strftime("%b %d") 
+                        trigger_processing(vod_info.get('url'), mc_start_time_str, vod_date)
+                    else:
+                        print("Could not find the VOD URL!")
                 
         # 2 min sleep and poll again
         time.sleep(120)
