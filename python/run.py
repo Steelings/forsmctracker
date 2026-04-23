@@ -14,12 +14,12 @@ QUALITY = "1080p60"
 
 VOD_URL = os.environ.get("VOD_URL", "https://www.twitch.tv/videos/2708189519")
 START_TIMESTAMP = os.environ.get("START_TIMESTAMP", "02:48:22")
+END_TIMESTAMP = os.environ.get("END_TIMESTAMP", None)  
 VOD_DATE = os.environ.get("VOD_DATE", "Feb 11")
 LIVE = len(sys.argv) > 1 and sys.argv[1] == "live"
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_FILE = os.path.join(cur_dir, "..", "data", "raw", f"live_{time.strftime('%Y%m%d-%H%M%S')}.json") if LIVE else os.path.join(cur_dir, "..", "data", "raw", f"output_{VOD_DATE.replace(' ', '').lower()}.json")
-
+OUTPUT_FILE = os.path.join(cur_dir, "..", "data", "raw", f"live_{time.strftime('%Y%m%d-%H%M%S')}.json") if LIVE else os.path.join(cur_dir, "..", "data", "raw", f"output_{VOD_DATE.replace(' ', '').lower()}_{START_TIMESTAMP.replace(':', '')}.json")
 WIDTH = 1920
 HEIGHT = 1080
 
@@ -65,7 +65,6 @@ reader = easyocr.Reader(
     # adjust_contrast=0.7,
 )
 
-
 def hms_to_seconds(hms: str) -> int:
     h, m, s = hms.split(":")
     return int(h) * 3600 + int(m) * 60 + int(s)
@@ -82,6 +81,7 @@ def seconds_since_midnight() -> int:
     return int((now - midnight).total_seconds())
 
 start_offset_seconds = seconds_since_midnight() if LIVE else hms_to_seconds(START_TIMESTAMP)
+end_offset_seconds = hms_to_seconds(END_TIMESTAMP) if END_TIMESTAMP else None  
 
 # --- Streamlink and FFmpeg
 streamlink = subprocess.Popen(
@@ -145,6 +145,15 @@ try:
 
             frame = np.frombuffer(raw, np.uint8).reshape((HEIGHT, WIDTH, 3))
 
+         
+            vod_timestamp_seconds = start_offset_seconds + frame_idx
+            if end_offset_seconds and vod_timestamp_seconds >= end_offset_seconds:
+                print(f"\n Reached END_TIMESTAMP ({END_TIMESTAMP}). Stopping frame extraction gracefully.")
+                break
+            
+            vod_timestamp_str = seconds_to_hms(vod_timestamp_seconds)
+            # ------------------------------------------------------
+
             timer_cropped = frame[ CROP_HEIGHT:CROP_HEIGHT_E, CROP_WIDTH:CROP_WIDTH_E]
             timer_hsv = cv2.cvtColor(timer_cropped, cv2.COLOR_BGR2HSV)
             timer_processed = cv2.inRange(timer_hsv, np.array([15, 10, 100]), np.array([55, 255, 255]))
@@ -171,9 +180,6 @@ try:
 
             ninjabrain_cropped = frame[ NINJABRAIN_HEIGHT:NINJABRAIN_HEIGHT_E, NINJABRAIN_WIDTH:NINJABRAIN_WIDTH_E ]
             ninjabrain_text = easyocr_on_mask(ninjabrain_cropped, "ABCDEFGHIJKLNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:0123456789%. ")
-
-            vod_timestamp_seconds = start_offset_seconds + frame_idx
-            vod_timestamp_str = seconds_to_hms(vod_timestamp_seconds)
 
             heart_color = frame[HEART_HEIGHT, HEART_WIDTH].tolist()
             heart_color.reverse()

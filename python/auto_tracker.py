@@ -32,21 +32,24 @@ def get_latest_vod(token, user_id):
     return data[0] if data else None
 
 def calculate_timestamp(stream_start_str, current_time):
+    if not stream_start_str:
+        return "00:00:00"
     stream_start = datetime.strptime(stream_start_str, "%Y-%m-%dT%H:%M:%SZ")
     diff = current_time - stream_start
     hours, remainder = divmod(diff.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
-# workflow - deep sleep until forsen goes live - + 4:00 PM and when forsen goes offline - + 10 PM, making sure to ignore los linkos LULE
-def trigger_processing(vod_url, start_timestamp, vod_date):
+# workflow - deep sleep until forsen goes live - + 4:00 PM and when forsen goes offline - + 10 PM
+def trigger_processing(vod_url, start_timestamp, end_timestamp, vod_date):
     print(f"\nSTARTING WORKFLOW FOR {vod_date} ")
-    print(f"VOD: {vod_url} | Start Time: {start_timestamp}")
+    print(f"VOD: {vod_url} | Start: {start_timestamp} | End: {end_timestamp}")
     
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
     env["VOD_URL"] = vod_url
     env["START_TIMESTAMP"] = start_timestamp
+    env["END_TIMESTAMP"] = end_timestamp  # <-- Safely passed to the environment
     env["VOD_DATE"] = vod_date
 
     root_dir = os.path.join(current_dir, '..')
@@ -101,6 +104,7 @@ def main():
     is_playing_mc = False
     mc_start_time_str = None
     forsen_user_id = None
+    stream_started_at = None  # <-- NEW: Track stream start to calculate offline end times
     
     while True:
         if not is_in_expected_stream_window() and not is_playing_mc:
@@ -124,40 +128,48 @@ def main():
         
         if stream:
             forsen_user_id = stream.get('user_id')
+            stream_started_at = stream.get('started_at')
             current_game = stream.get('game_name')
             
             # minecraft logic - only start rendering vods when its on mc category
             if current_game == 'Minecraft' and not is_playing_mc:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] mc detected")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 🟢 mc detected")
                 is_playing_mc = True
-                mc_start_time_str = calculate_timestamp(stream.get('started_at'), datetime.utcnow())
+                mc_start_time_str = calculate_timestamp(stream_started_at, datetime.utcnow())
                 print(f"Calculated VOD Start Timestamp: {mc_start_time_str}")
                 
             elif current_game != 'Minecraft' and is_playing_mc:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Forsen stopped playing Minecraft (Switched to {current_game}).")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 🛑 Forsen stopped playing Minecraft (Switched to {current_game}).")
                 is_playing_mc = False
+                
+                mc_end_time_str = calculate_timestamp(stream_started_at, datetime.utcnow())
+                print(f"Calculated VOD End Timestamp: {mc_end_time_str}")
                 
                 vod_info = get_latest_vod(token, forsen_user_id)
                 if vod_info:
                     vod_date = datetime.now().strftime("%b %d") 
-                    trigger_processing(vod_info.get('url'), mc_start_time_str, vod_date)
+                    trigger_processing(vod_info.get('url'), mc_start_time_str, mc_end_time_str, vod_date)
                 else:
                     print("Could not find the VOD URL!")
                     
             elif is_playing_mc:
+                # Silently looping every 2 mins to prevent terminal spam
                 pass
                 
         else:
             if is_playing_mc:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Stream ended while playing Minecraft.")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 🛑 Stream ended while playing Minecraft.")
                 is_playing_mc = False
                 
+                # Calculate end time based on the last known stream start time
+                mc_end_time_str = calculate_timestamp(stream_started_at, datetime.utcnow())
+                
                 if forsen_user_id:
-                    print("Fetching VOD for idiotasen to not swap category when going offline")
+                    print("Fetching VOD for abrupt offline ending...")
                     vod_info = get_latest_vod(token, forsen_user_id)
                     if vod_info:
                         vod_date = datetime.now().strftime("%b %d") 
-                        trigger_processing(vod_info.get('url'), mc_start_time_str, vod_date)
+                        trigger_processing(vod_info.get('url'), mc_start_time_str, mc_end_time_str, vod_date)
                     else:
                         print("Could not find the VOD URL!")
                 

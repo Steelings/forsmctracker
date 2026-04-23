@@ -4,7 +4,7 @@ import re
 from datetime import date
 
 MONTHS = { "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12 }
-FILENAME_RE = re.compile(r"^output_([a-z]{3})(\d{2})\.json$")
+FILENAME_RE = re.compile(r"^output_([a-z]{3})(\d{2})(?:_\d+)?\.json$")
 LIVE_FILENAME_RE = re.compile(r"^live_(\d+-\d+)\.json$")
 
 TIMER_REGEX = re.compile(r"^\d\d\.[012345]\d\.\d\d\d$")
@@ -53,7 +53,8 @@ def filter_raw_data(raw_data: list[dict]) -> None:
                 i += 1
 
         #day["data"].pop(0)
-        day["data"].pop(-1)
+        if day["data"]:
+            day["data"].pop(-1)
 
 def build_runs(raw_data: list[dict]) -> list[dict]:
     # Build Runs containing all the data for each run.
@@ -143,7 +144,7 @@ def main() -> None:
         if match:
             candidates.append((date_from_filename(match, year), name))
 
-    candidates.sort(key=lambda x: x[0])
+    candidates.sort(key=lambda x: (x[0], x[1]))
 
     raw_data = []
     for _, name in candidates:
