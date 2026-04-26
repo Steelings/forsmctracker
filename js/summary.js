@@ -9,7 +9,7 @@ import { getSplits } from "./helpers/runhelper.js";
  */
 export function buildDailySummary(runs) {
     const splits = getSplits(runs);
-    
+
     // Mapping IDs from HTML to specific indices in the getSplits array
     // Index 1: Nether, 2: S1, 3: S2, 5: Stronghold, 6: End
     const updateCard = (idQty, idAvg, splitObj) => {
@@ -19,7 +19,7 @@ export function buildDailySummary(runs) {
 
         const allTimes = Object.values(splitObj).flat();
         qtyEl.textContent = allTimes.length;
-        
+
         const avg = allTimes.length > 0 ? allTimes.reduce((a, b) => a + b, 0) / allTimes.length : 0;
         if (avgEl) avgEl.textContent = `Avg: ${formatMMSS(avg)}`;
     };
@@ -87,7 +87,7 @@ export function buildDailySummary(runs) {
  */
 export function buildDeathPieChart(runs) {
     const deathCounts = {};
-    
+
     // Icon mapping based on your static folder
     const imgMap = {
         "Lava": "static/forsenHoppedin.webp",
@@ -114,7 +114,7 @@ export function buildDeathPieChart(runs) {
             else if (d.includes("burned") || d.includes("fire")) cause = "Fire";
             else if (d.includes("skel")) cause = "Skeletons";
             else if (d.includes("wither")) cause = "Wither";
-            
+
             deathCounts[cause] = (deathCounts[cause] || 0) + 1;
         }
     });
@@ -122,7 +122,7 @@ export function buildDeathPieChart(runs) {
     const sortedLabels = Object.keys(deathCounts).sort((a, b) => deathCounts[b] - deathCounts[a]);
     const sortedData = sortedLabels.map(label => deathCounts[label]);
     const backgroundColors = ['#ee5555', '#558877', '#8855ee', '#eeaa55', '#635b55', '#7a0000', '#252540', '#30363d'];
-    
+
     const ctx = document.getElementById('death-pie-chart');
     if (!ctx) return;
 
@@ -147,7 +147,7 @@ export function buildDeathPieChart(runs) {
             plugins: {
                 // TURN OFF DEFAULT CANVAS LEGEND
                 legend: {
-                    display: false 
+                    display: false
                 },
                 tooltip: {
                     backgroundColor: '#161b22',
@@ -193,7 +193,7 @@ export function buildProjectionChart(runsByDay) {
     if (!ctx) return;
 
     const dates = Object.keys(runsByDay).sort((a, b) => new Date(a) - new Date(b));
-    
+
     let cumulativeRuns = 0;
     let cumulativePaceRuns = 0;
     const CONVERSION_RATE = 0.025; // 2.5% conversion
@@ -202,7 +202,7 @@ export function buildProjectionChart(runsByDay) {
     const projectionData = dates.map((date, index) => {
         const dayRuns = runsByDay[date];
         cumulativeRuns += dayRuns.length;
-        
+
         // Count how many runs were actually on pace today and add to cumulative
         dayRuns.forEach(run => {
             const s2 = run.bastion && run.fort ? Math.max(run.bastion, run.fort) : null;
@@ -249,11 +249,14 @@ export function buildProjectionChart(runsByDay) {
             datasets: [{
                 label: 'Days to Record',
                 data: projectionData,
-                borderColor: '#58a6ff',
-                backgroundColor: 'rgba(88, 166, 255, 0.1)',
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 6,
+                borderColor: '#00E5FF',
+                backgroundColor: 'rgba(0, 229, 255, 0.15)',
+                borderWidth: 3,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#00E5FF',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 8,
                 fill: true,
                 tension: 0.3
             }]
@@ -262,34 +265,65 @@ export function buildProjectionChart(runsByDay) {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
-            scales: {
-                y: {
-                    min: 0,
-                    max: 400, 
-                    title: { display: true, text: 'Expected Days Remaining', color: '#8b949e' },
-                    grid: { color: 'rgba(48, 54, 61, 0.3)' },
-                    ticks: { color: '#8b949e' }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#8b949e', maxTicksLimit: 12 }
-                }
+            layout: {
+                padding: { top: 10, right: 20, bottom: 10, left: 10 }
             },
             plugins: {
                 legend: { display: false },
+                title: {
+                    display: true, 
+                    text: 'Projected Timeline to Record (Sub 14:27)',
+                    color: '#FFFFFF',
+                    font: { size: 22, weight: 'bold', family: "'Helvetica Neue', 'Arial', sans-serif" },
+                    padding: { bottom: 25 }
+                },
                 tooltip: {
                     enabled: true,
-                    backgroundColor: '#161b22',
+                    backgroundColor: 'rgba(22, 27, 34, 0.95)',
+                    titleColor: '#FFFFFF',
+                    bodyColor: '#E6EDF3',
+                    titleFont: { size: 16, weight: 'bold' },
+                    bodyFont: { size: 14, family: "'Courier New', monospace" },
+                    padding: 16,
+                    displayColors: false,
+                    borderColor: 'rgba(0, 229, 255, 0.4)',
+                    borderWidth: 1,
                     callbacks: {
+                        title: (context) => `Date: ${context[0].label}`,
                         label: (context) => {
                             const d = context.raw;
                             return [
-                                ` Est. Date: ${d.estDate}`,
-                                ` Days Left: ${d.y}`,
-                                ` Total Runs: ${d.totalRuns}`,
-                                ` Pace: ${d.pace} runs/stream`
+                                `Est. Date      : ${d.estDate}`,
+                                `Days Left      : ${d.y.toFixed(1)}`,
+                                `Total Runs     : ${d.totalRuns.toLocaleString()}`,
+                                `Pace           : ${d.pace} runs/stream`
                             ];
                         }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 0,
+                    max: 400,
+                    title: {
+                        display: true,
+                        text: 'Expected Days Remaining',
+                        color: '#E6EDF3',
+                        font: { size: 15, weight: 'bold' }
+                    },
+                    grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                    ticks: {
+                        color: '#E6EDF3',
+                        font: { size: 13 }
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#E6EDF3',
+                        maxTicksLimit: 12,
+                        font: { size: 13 }
                     }
                 }
             }
