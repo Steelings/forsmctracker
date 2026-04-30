@@ -354,4 +354,8 @@ export function filterSummaryByDate(runs, selectedDate) {
 }
 
 export function rebuildSummary(runs, selectedDate) {
+    const filteredRuns = filterSummaryByDate(runs, selectedDate);
+    buildDailySummary(filteredRuns);
+    buildDeathPieChart(filteredRuns);
+    
 }
