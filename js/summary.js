@@ -330,3 +330,28 @@ export function buildProjectionChart(runsByDay) {
         }
     });
 }
+
+export function filterSummaryByDate(runs, selectedDate) {
+    const uniqueDates = [...new Set(runs.map(run => run.date))];
+    uniqueDates.forEach(date => {
+        const option = document.createElement("option");
+        option.value = date;
+        option.textContent = date;
+        document.getElementById("filter-dates").appendChild(option);
+    });
+
+    if (selectedDate) {
+        document.getElementById("filter-dates").value = selectedDate;
+    }
+
+    document.getElementById("filter-dates").onchange = () => {
+        selectedDate = document.getElementById("filter-dates").value;
+        rebuildSummary(runs, selectedDate);
+    };
+
+    return runs.filter(run => run.date === selectedDate);
+
+}
+
+export function rebuildSummary(runs, selectedDate) {
+}
