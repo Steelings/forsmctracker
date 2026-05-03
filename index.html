@@ -231,13 +231,13 @@
         </div>
 
         <div class="stat-card poly-card" style="height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <h3 style="margin-top: 0; color: #8b949e; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase;">Polymarket Odds</h3>
-            <p style="font-size: 0.95rem; margin-bottom: 15px; color: #c9d1d9; text-align: center; max-width: 80%;">Will Forsen beat xQc by April 30?</p>
-            <h2 id="poly-odds" style="color: #4ade80; font-size: 3.5rem; margin: 10px 0; text-shadow: 0 0 15px rgba(74, 222, 128, 0.2);">...</h2>
-            <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by" target="_blank" style="color: #58a6ff; text-decoration: none; font-size: 0.9rem; margin-top: 20px;">
-                View Market ↗
-            </a>
-        </div>
+    <h3 style="margin-top: 0; color: #8b949e; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase;">Polymarket Odds</h3>
+    <p style="font-size: 0.95rem; margin-bottom: 15px; color: #c9d1d9; text-align: center; max-width: 80%;">Will Forsen beat xQc by May 31?</p>
+    <h2 id="poly-odds" style="color: #4ade80; font-size: 3.5rem; margin: 10px 0; text-shadow: 0 0 15px rgba(74, 222, 128, 0.2);">...</h2>
+    <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by-286" target="_blank" style="color: #58a6ff; text-decoration: none; font-size: 0.9rem; margin-top: 20px;">
+        View Market ↗
+    </a>
+</div>
     </div>
 
     <section class="card centered-section">
@@ -501,31 +501,34 @@
         setInterval(fetchTwitchStatus, 300000);
 
         // --- Polymarket Logic ---
-        const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by";
-        const proxyUrl = "https://corsproxy.io/?url=";
+        const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by-286";
+const proxyUrl = "https://corsproxy.io/?url=";
 
-        fetch(proxyUrl + encodeURIComponent(targetUrl))
-            .then(response => response.json())
-            .then(data => {
-                if (data && data[0] && data[0].markets) {
-                    const market = data[0].markets.find(m => m.groupItemTitle === "April 30") || data[0].markets[0];
-                    let yesPrice = 0;
-                    if (market.outcomePrices) {
-                        const prices = JSON.parse(market.outcomePrices);
-                        yesPrice = parseFloat(prices[0]);
-                    }
-                    if (yesPrice === 0 && market.lastTradePrice) yesPrice = market.lastTradePrice;
+fetch(proxyUrl + encodeURIComponent(targetUrl))
+    .then(response => response.json())
+    .then(data => {
+        if (data && data[0] && data[0].markets) {
+            // update to 31 may
+            const market = data[0].markets.find(m => m.groupItemTitle === "May 31") || data[0].markets[0];
+            let yesPrice = 0;
+            
+            if (market.outcomePrices) {
+                const prices = JSON.parse(market.outcomePrices);
+                yesPrice = parseFloat(prices[0]);
+            }
+            if (yesPrice === 0 && market.lastTradePrice) yesPrice = market.lastTradePrice;
 
-                    const yesPercentage = Math.round(yesPrice * 100);
-                    const oddsEl = document.getElementById("poly-odds");
-                    if (oddsEl) {
-                        oddsEl.innerText = yesPercentage + "% YES";
-                        oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
-                        oddsEl.style.textShadow = yesPercentage < 10 ? "0 0 15px rgba(238, 85, 85, 0.2)" : "0 0 15px rgba(74, 222, 128, 0.2)";
-                    }
-                }
-            })
-            .catch(e => console.error("Polymarket Fetch Error:", e));
+            const yesPercentage = Math.round(yesPrice * 100);
+            const oddsEl = document.getElementById("poly-odds");
+            
+            if (oddsEl) {
+                oddsEl.innerText = yesPercentage + "% YES";
+                oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
+                oddsEl.style.textShadow = yesPercentage < 10 ? "0 0 15px rgba(238, 85, 85, 0.2)" : "0 0 15px rgba(74, 222, 128, 0.2)";
+            }
+        }
+    })
+    .catch(e => console.error("Polymarket Fetch Error:", e));
     </script>
 </body>
 
