@@ -31,8 +31,9 @@
             <span>
                 Forsen Speedrun Tracker (last vod: <span id="latest-vod-date" style="color: #58a6ff;">loading...</span>)
                 <span class="beta-tag" style="color: #55ee55;">
-                 v1.0 - Stable Release - Maintained by Steelingz - Forked from 
-                  <a href="https://github.com/BleachDev/pacefors" target="_blank" rel="noopener noreferrer" style="color: #58a6ff; text-decoration: none;">BleachDev</a>
+                    v1.0 - Stable Release - Maintained by Steelingz - Forked from
+                    <a href="https://github.com/BleachDev/pacefors" target="_blank" rel="noopener noreferrer"
+                        style="color: #58a6ff; text-decoration: none;">BleachDev</a>
                 </span>
             </span>
         </div>
@@ -45,7 +46,7 @@
     </header>
 
     <section class="prediction-hero">
-        
+
         <a id="twitch-status-badge" class="twitch-badge">
             <img src="static/forsenLoading-4x.webp" height="20" alt="Loading" style="border-radius: 4px;">
             <span>Checking Twitch status...</span>
@@ -109,7 +110,8 @@
 
         <div class="stat-card pie-card">
             <h3>Run Killers</h3>
-            <div class="pie-layout-wrapper" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;">
+            <div class="pie-layout-wrapper"
+                style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;">
                 <div class="pie-wrapper">
                     <canvas id="death-pie-chart"></canvas>
                 </div>
@@ -119,7 +121,7 @@
 
         <div class="stat-card insights-card">
             <h3 style="text-align: center; margin-bottom: 20px;">Global Insights</h3>
-            
+
             <style>
                 .insight-box {
                     background: #21262d;
@@ -133,23 +135,27 @@
                     text-align: center;
                     min-height: 90px;
                 }
+
                 .insight-title {
                     font-size: 0.7rem;
                     color: #8b949e;
                     text-transform: uppercase;
                     margin-bottom: 8px;
                 }
+
                 .insight-value {
                     font-size: 1.4rem;
                     font-weight: bold;
-                    white-space: nowrap; 
+                    white-space: nowrap;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                 }
+
                 .insight-box.best-vod {
                     border-color: #55ee55;
                 }
+
                 .insight-box.best-vod .insight-title {
                     color: #55ee55;
                 }
@@ -187,15 +193,18 @@
                     <strong class="insight-value" style="color: #58a6ff;" id="insight-nether-hour">-</strong>
                 </div>
                 <div class="insight-box">
-                    <span class="insight-title" title="Average number of resets it takes to get one nether entry">Resets / Nether</span>
+                    <span class="insight-title" title="Average number of resets it takes to get one nether entry">Resets
+                        / Nether</span>
                     <strong class="insight-value" style="color: #ff7b72;" id="insight-resets-per-nether">-</strong>
                 </div>
                 <div class="insight-box">
-                    <span class="insight-title" title="Average time to enter the Nether (for successful entries)">Avg Nether Entry</span>
+                    <span class="insight-title" title="Average time to enter the Nether (for successful entries)">Avg
+                        Nether Entry</span>
                     <strong class="insight-value" style="color: #ffaa00;" id="insight-avg-nether-entry">-</strong>
                 </div>
                 <div class="insight-box">
-                    <span class="insight-title" title="Entered nether under 3 mins, but died before Stronghold">God Seeds Wasted</span>
+                    <span class="insight-title" title="Entered nether under 3 mins, but died before Stronghold">God
+                        Seeds Wasted</span>
                     <strong class="insight-value" style="color: #ee5555;" id="insight-god-wasted">-</strong>
                 </div>
 
@@ -223,21 +232,30 @@
             </div>
         </div>
 
-        <div class="stat-card projection-card" style="height: 400px; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+        <div class="stat-card projection-card"
+            style="height: 400px; display: flex; flex-direction: column; position: relative; overflow: hidden;">
             <h3 style="text-align: center; color: #8b949e; margin-bottom: 10px;">Projected Timeline to Record</h3>
             <div style="flex-grow: 1; width: 100%;">
                 <canvas id="projection-chart"></canvas>
             </div>
         </div>
 
-        <div class="stat-card poly-card" style="height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-    <h3 style="margin-top: 0; color: #8b949e; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase;">Polymarket Odds</h3>
-    <p style="font-size: 0.95rem; margin-bottom: 15px; color: #c9d1d9; text-align: center; max-width: 80%;">Will Forsen beat xQc by May 31?</p>
-    <h2 id="poly-odds" style="color: #4ade80; font-size: 3.5rem; margin: 10px 0; text-shadow: 0 0 15px rgba(74, 222, 128, 0.2);">...</h2>
-    <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by-286" target="_blank" style="color: #58a6ff; text-decoration: none; font-size: 0.9rem; margin-top: 20px;">
-        View Market ↗
-    </a>
-</div>
+        <div class="stat-card poly-card"
+            style="height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h3
+                style="margin-top: 0; color: #8b949e; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase;">
+                Polymarket Odds</h3>
+            <p id="poly-title"
+                style="font-size: 0.95rem; margin-bottom: 15px; color: #c9d1d9; text-align: center; max-width: 80%;">
+                Loading current month...</p>
+            <h2 id="poly-odds"
+                style="color: #4ade80; font-size: 3.5rem; margin: 10px 0; text-shadow: 0 0 15px rgba(74, 222, 128, 0.2);">
+                ...</h2>
+            <a href="https://polymarket.com/event/will-forsen-beat-xqcs-minecraft-speedrun-record-by-286"
+                target="_blank" style="color: #58a6ff; text-decoration: none; font-size: 0.9rem; margin-top: 20px;">
+                View Market ↗
+            </a>
+        </div>
     </div>
 
     <section class="card centered-section">
@@ -359,7 +377,7 @@
                     if (rSecs > maxRunSecs) { maxRunSecs = rSecs; longestRun = r; }
                     if (r.nether) {
                         netherCount++;
-                        totalNetherSecs += r.nether; 
+                        totalNetherSecs += r.nether;
                         if (r.nether < fastestNether) { fastestNether = r.nether; fastestNetherRun = r; }
                         if (r.nether < 180 && !r.stronghold) godSeedsWasted++;
                     }
@@ -387,7 +405,7 @@
                 document.getElementById('insight-avg-length').textContent = formatTime(Math.floor(totalSecs / runs.length));
                 document.getElementById('insight-runs-stream').textContent = Math.round(runs.length / Math.max(1, uniqueDays.size));
                 document.getElementById('insight-avg-stream-length').textContent = `${avgStreamH}h ${avgStreamM.toString().padStart(2, '0')}m`;
-                
+
                 // Row 2
                 document.getElementById('insight-nether-rate').textContent = ((netherCount / runs.length) * 100).toFixed(1) + '%';
                 document.getElementById('insight-nether-hour').textContent = (netherCount / (totalSecs / 3600)).toFixed(1);
@@ -409,7 +427,6 @@
             buildAvgEntryChart(runs);
             buildOdds(runs);
 
-            // --- INJECTED CODE: Replace Table Text with Images ---
             const oddsTableBody = document.getElementById('odds-chance');
             if (oddsTableBody) {
                 const stageImages = {
@@ -426,15 +443,12 @@
                     const firstCell = row.cells[0];
                     if (firstCell) {
                         const stageName = firstCell.textContent.trim();
-                        // If the text matches one of our keys, replace it with an image
                         if (stageImages[stageName]) {
                             firstCell.innerHTML = `<img src="${stageImages[stageName]}" title="${stageName}" style="width: 24px; height: 24px; vertical-align: middle;">`;
                         }
                     }
                 });
             }
-            // -----------------------------------------------------
-
             buildProjectionChart(runsByDay);
         }
 
@@ -465,10 +479,10 @@
                     const gameRes = await fetch('https://decapi.me/twitch/game/forsen');
                     const gameText = await gameRes.text();
                     const isMinecraft = gameText.toLowerCase().includes('minecraft');
-                    
+
                     badge.href = "https://twitch.tv/forsen";
                     badge.target = "_blank";
-                    
+
                     if (isMinecraft) {
                         badge.className = 'twitch-badge badge-live-mc';
                         badge.innerHTML = `
@@ -496,39 +510,46 @@
                 `;
             }
         }
-        
+
         fetchTwitchStatus();
         setInterval(fetchTwitchStatus, 300000);
 
-        // --- Polymarket Logic ---
-        const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by-286";
-const proxyUrl = "https://corsproxy.io/?url=";
+        // polymarket
+        const now = new Date();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const monthName = endOfMonth.toLocaleString('en-US', { month: 'long' });
+        const lastDay = endOfMonth.getDate();
+        const targetDateString = `${monthName} ${lastDay}`; // dynamic dates
 
-fetch(proxyUrl + encodeURIComponent(targetUrl))
-    .then(response => response.json())
-    .then(data => {
-        if (data && data[0] && data[0].markets) {
-            // update to 31 may
-            const market = data[0].markets.find(m => m.groupItemTitle === "May 31") || data[0].markets[0];
-            let yesPrice = 0;
-            
-            if (market.outcomePrices) {
-                const prices = JSON.parse(market.outcomePrices);
-                yesPrice = parseFloat(prices[0]);
-            }
-            if (yesPrice === 0 && market.lastTradePrice) yesPrice = market.lastTradePrice;
-
-            const yesPercentage = Math.round(yesPrice * 100);
-            const oddsEl = document.getElementById("poly-odds");
-            
-            if (oddsEl) {
-                oddsEl.innerText = yesPercentage + "% YES";
-                oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
-                oddsEl.style.textShadow = yesPercentage < 10 ? "0 0 15px rgba(238, 85, 85, 0.2)" : "0 0 15px rgba(74, 222, 128, 0.2)";
-            }
+        const titleEl = document.getElementById("poly-title");
+        if (titleEl) {
+            titleEl.innerText = `Will Forsen beat xQc by ${targetDateString}?`;
         }
-    })
-    .catch(e => console.error("Polymarket Fetch Error:", e));
+
+        const targetUrl = "https://gamma-api.polymarket.com/events?slug=will-forsen-beat-xqcs-minecraft-speedrun-record-by-286";
+        const proxyUrl = "https://corsproxy.io/?url=";
+
+        fetch(proxyUrl + encodeURIComponent(targetUrl))
+            .then(response => response.json())
+            .then(data => {
+                if (data && data[0] && data[0].markets) {
+                    const market = data[0].markets.find(m => m.groupItemTitle === targetDateString) || data[0].markets[0];
+                    let yesPrice = 0;
+                    if (market.outcomePrices) {
+                        const prices = JSON.parse(market.outcomePrices);
+                        yesPrice = parseFloat(prices[0]);
+                    }
+                    if (yesPrice === 0 && market.lastTradePrice) yesPrice = market.lastTradePrice;
+                    const yesPercentage = Math.round(yesPrice * 100);
+                    const oddsEl = document.getElementById("poly-odds");
+                    if (oddsEl) {
+                        oddsEl.innerText = yesPercentage + "% YES";
+                        oddsEl.style.color = yesPercentage < 10 ? "#ee5555" : "#4ade80";
+                        oddsEl.style.textShadow = yesPercentage < 10 ? "0 0 15px rgba(238, 85, 85, 0.2)" : "0 0 15px rgba(74, 222, 128, 0.2)";
+                    }
+                }
+            })
+            .catch(e => console.error("Polymarket Fetch Error:", e));
     </script>
 </body>
 
