@@ -45,7 +45,36 @@
         </div>
     </header>
 
-    <section class="prediction-hero">
+    <div class="victory-banner" style="
+        background: rgba(85, 238, 85, 0.1);
+        border: 2px solid #55ee55;
+        border-radius: 8px;
+        padding: 20px 30px;
+        margin: 30px auto 10px auto;
+        max-width: 900px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(85, 238, 85, 0.3);
+        animation: victory-pulse 2s infinite alternate;
+    ">
+        <h2 style="margin: 0; font-size: 2.5rem; color: #ffffff; text-shadow: 0 0 15px #55ee55; text-transform: uppercase;">
+            🏆 THE RECORD IS BEATEN 🏆
+        </h2>
+        <p style="font-size: 1.5rem; color: #c9d1d9; margin: 15px 0 5px 0;">
+            Forsen has finally done it with a time of 
+            <span style="color: #ffffff; background: #21262d; padding: 5px 12px; border-radius: 6px; border: 1px solid #55ee55; font-weight: bold; font-family: 'JetBrains Mono', monospace;">14:18</span>
+        </p>
+        <p style="color: #8b949e; font-size: 1rem; margin: 0;">
+            The daily grind is over. See you in the next asylum.
+        </p>
+    </div>
+    
+    <style>
+        @keyframes victory-pulse {
+            0% { box-shadow: 0 0 10px rgba(85, 238, 85, 0.2); }
+            100% { box-shadow: 0 0 35px rgba(85, 238, 85, 0.7); }
+        }
+    </style>
+    <section class="prediction-hero" style="display: none;">
 
         <a id="twitch-status-badge" class="twitch-badge">
             <img src="static/forsenLoading-4x.webp" height="20" alt="Loading" style="border-radius: 4px;">
