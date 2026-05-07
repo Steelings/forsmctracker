@@ -365,6 +365,10 @@
         import { buildOdds, buildPredictions } from "./js/odds.js";
         import { Runlist } from "./js/runlist.js";
 
+        // set to undefined to disable actual record timeline
+        // surely this won't be necessary
+        const recordDate = "May 06";
+
         async function init() {
             let vodRuns = [];
             let liveRuns = [];
@@ -510,7 +514,7 @@
                     }
                 });
             }
-            buildProjectionChart(runsByDay);
+            buildProjectionChart(runsByDay, recordDate);
         }
 
         init();

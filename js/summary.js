@@ -188,7 +188,7 @@ export function buildDeathPieChart(runs) {
     legendContainer.innerHTML = legendHTML;
 }
 
-export function buildProjectionChart(runsByDay) {
+export function buildProjectionChart(runsByDay, record) {
     const ctx = document.getElementById('projection-chart');
     if (!ctx) return;
 
@@ -198,6 +198,9 @@ export function buildProjectionChart(runsByDay) {
     let cumulativePaceRuns = 0;
     const CONVERSION_RATE = 0.025; // 2.5% conversion
     const PACE_CUTOFF = 630; // 10.5 minutes EDIT @metser
+
+    const actualDaysToRecord = (date, recordDate) =>
+        (new Date(record + " 2026") - new Date(date + " 2026")) / (1000 * 60 * 60 * 24);
 
     const projectionData = dates.map((date, index) => {
         const dayRuns = runsByDay[date];
@@ -235,9 +238,19 @@ export function buildProjectionChart(runsByDay) {
             y: parseFloat(d50.toFixed(1)),
             totalRuns: cumulativeRuns,
             pace: runsPerStream.toFixed(1),
-            estDate: dateStr // Pass the formatted date to the tooltip
+            estDate: dateStr, // Pass the formatted date to the tooltip
+            actualLeft: !!record ? actualDaysToRecord(date, record) : undefined
         };
     });
+
+    const actualData = !record
+        ? {}
+        : dates.map((date, index) => {
+            return {
+                x: date,
+                y: actualDaysToRecord(date, record)
+            }
+        });
 
     const existingChart = Chart.getChart("projection-chart");
     if (existingChart) existingChart.destroy();
@@ -246,20 +259,36 @@ export function buildProjectionChart(runsByDay) {
         type: 'line',
         data: {
             labels: dates,
-            datasets: [{
-                label: 'Days to Record',
-                data: projectionData,
-                borderColor: '#00E5FF',
-                backgroundColor: 'rgba(0, 229, 255, 0.15)',
-                borderWidth: 3,
-                pointBackgroundColor: '#FFFFFF',
-                pointBorderColor: '#00E5FF',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 8,
-                fill: true,
-                tension: 0.3
-            }]
+            datasets: [
+                {
+                    label: 'Days to Record',
+                    data: projectionData,
+                    borderColor: '#00E5FF',
+                    backgroundColor: 'rgba(0, 229, 255, 0.15)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#FFFFFF',
+                    pointBorderColor: '#00E5FF',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 8,
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Actual Days to Record',
+                    data: actualData,
+                    borderColor: '#FF4000',
+                    backgroundColor: 'rgba(255, 20, 0, 0.15)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#FFFFFF',
+                    pointBorderColor: '#FF4000',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 8,
+                    pointHitRadius: 0,
+                    fill: true,
+                    tension: 0.3
+                }]
         },
         options: {
             responsive: true,
@@ -279,6 +308,7 @@ export function buildProjectionChart(runsByDay) {
                 },
                 tooltip: {
                     enabled: true,
+                    filter: (tooltipItem) => tooltipItem.datasetIndex === 0,
                     backgroundColor: 'rgba(22, 27, 34, 0.95)',
                     titleColor: '#FFFFFF',
                     bodyColor: '#E6EDF3',
@@ -288,16 +318,20 @@ export function buildProjectionChart(runsByDay) {
                     displayColors: false,
                     borderColor: 'rgba(0, 229, 255, 0.4)',
                     borderWidth: 1,
+                    position: 'nearest',
                     callbacks: {
                         title: (context) => `Date: ${context[0].label}`,
                         label: (context) => {
                             const d = context.raw;
-                            return [
-                                `Est. Date      : ${d.estDate}`,
-                                `Days Left      : ${d.y.toFixed(1)}`,
-                                `Total Runs     : ${d.totalRuns.toLocaleString()}`,
-                                `Pace           : ${d.pace} runs/stream`
+                            let ret = [
+                                `Est. Date       : ${d.y < 1500 ? d.estDate : "???"}`,
+                                `Days Left       : ${d.y < 1500 ? d.y.toFixed(1) : "???"}`,
+                                `Total Runs      : ${d.totalRuns.toLocaleString()}`,
+                                `Pace            : ${d.pace} runs/stream`
                             ];
+                            if (!!d.actualLeft)
+                                ret.push(`Actual Days Left: ${d.actualLeft}`)
+                            return ret;
                         }
                     }
                 }
@@ -308,7 +342,7 @@ export function buildProjectionChart(runsByDay) {
                     max: 400,
                     title: {
                         display: true,
-                        text: 'Expected Days Remaining',
+                        text: 'Days Remaining',
                         color: '#E6EDF3',
                         font: { size: 15, weight: 'bold' }
                     },
