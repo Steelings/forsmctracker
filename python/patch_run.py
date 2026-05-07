@@ -8,21 +8,25 @@ try:
         runs = json.load(f)
 
     updated = False
+    target_run = None
 
     for run in runs:
-        if run.get("date") == "Apr 18" and run.get("end") is not None:
-            run["runTime"] = "16:59.561"
-            run["finish"] = 1019.561 
-            updated = True
-            print(f"Run found! Old time was {run.get('runTime')}. Updated to 16:59.561!")
-            break
+        if run.get("date") == "May 06":
+            target_run = run
+            
+    if target_run:
+        old_time = target_run.get("runTime", "Unknown")
+        target_run["runTime"] = "14:18.375"
+        target_run["finish"] = 858.375
+        updated = True
+        print(f"Record run found! Old time was {old_time}. Updated to 14:18.375!")
 
     if updated:
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(runs, f, separators=(',', ':'))
         print("Done!")
     else:
-        print("Could not find a run on Apr 18 with an 'end' split. Check the date/data!")
+        print("Could not find a run on May 06. Check the date/data!")
 
 except Exception as e:
     print(f"An error occurred: {e}")
